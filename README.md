@@ -1,4 +1,4 @@
-# opencode-config
+# opencode-python
 
 A highly opinionated [OpenCode](https://opencode.ai) configuration for Python backend
 development. This is not a general-purpose AI assistant setup — it is a precise,
@@ -254,7 +254,7 @@ OpenCode formats every file it writes. The formatter config mirrors the Neovim `
 ## Installation
 
 ```bash
-git clone https://github.com/<your-username>/opencode-config.git ~/projects/opencode
+git clone https://github.com/philipp-bliznuk/opencode-python.git ~/projects/opencode
 cd ~/projects/opencode
 ./install.sh
 ```
