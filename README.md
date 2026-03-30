@@ -226,7 +226,6 @@ OpenCode formats every file it writes. The formatter config mirrors the Neovim `
 | Filetype | Formatter | Notes |
 |---|---|---|
 | `.py`, `.pyi` | `ruff-format.sh` | Three-step pipeline: `ruff check --fix` → `ruff format` → `ruff check --select I --fix`. Uses `--config pyproject.toml` when present. |
-| `.lua` | `stylua` | 2-space indent, 120 column width. |
 | `.md`, `.mdx` | `prettier` (via npx) | `--prose-wrap preserve` — does not reflow manually-wrapped paragraphs. |
 | `.js`, `.jsx`, `.ts`, `.tsx`, `.css`, `.html` | `prettier` (via npx) | Fallback for frontend files. Biome auto-overrides per-project when `biome.json` is present. |
 | `.json`, `.jsonc`, `.yaml`, `.yml` | `prettier` (via npx) | Single formatter for all config and data files. Biome auto-overrides per-project when `biome.json` is present. |
@@ -241,7 +240,6 @@ OpenCode formats every file it writes. The formatter config mirrors the Neovim `
 | [opencode](https://opencode.ai) | Everything | `brew install sst/tap/opencode` |
 | [uv](https://docs.astral.sh/uv/) | Python projects | `brew install uv` |
 | [ruff](https://docs.astral.sh/ruff/) | Python formatter | `brew install ruff` |
-| [stylua](https://github.com/JohnnyMorganz/StyLua) | Lua formatter | `brew install stylua` |
 | [node](https://nodejs.org) | MCP servers, npm plugins, prettier | `brew install node` |
 | [bun](https://bun.sh) | Custom TS tools, frontend runtime | `brew install bun` |
 | [snip](https://github.com/edouard-claude/snip) | `opencode-snip` plugin | `brew install edouard-claude/tap/snip` |
