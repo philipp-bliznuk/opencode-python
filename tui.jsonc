@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencode.ai/tui.json",
+
+  // Matches the catppuccin mocha colorscheme used in Neovim
+  "theme": "catppuccin-mocha",
+
+  // macOS-style scroll acceleration — consistent with terminal/editor feel
+  "scroll_acceleration": {
+    "enabled": true
+  },
+
+  // Auto diff style — adapts to terminal width
+  "diff_style": "auto"
+}
