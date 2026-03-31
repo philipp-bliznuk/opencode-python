@@ -11,21 +11,11 @@
   ],
 
   // ── LSP ───────────────────────────────────────────────────────────────────
-  // pyright auto-detects when installed as a project dependency.
-  // Explicitly point it at the uv-managed venv so imports resolve correctly
-  // without any additional per-project configuration.
-  "lsp": {
-    // Python: explicit venv path so pyright resolves imports correctly
-    "pyright": {
-      "initialization": {
-        "python": {
-          "pythonPath": ".venv/bin/python"
-        }
-      }
-    },
-    // TypeScript: auto-detected when tsconfig.json is present in the project
-    "ts_ls": {}
-  },
+  // All LSP servers are auto-detected — no explicit configuration needed.
+  // pyright:     auto-starts when pyright is installed as a project dependency
+  // typescript:  auto-starts when typescript is a project dependency
+  // Both find the correct venv / tsconfig automatically from the project root.
+  // To disable a specific server: "lsp": { "pyright": { "disabled": true } }
 
   // ── MCP Servers ───────────────────────────────────────────────────────────
   // All servers run as local child processes — no external service calls.
@@ -72,7 +62,7 @@
         "AWS_PROFILE": "{env:AWS_PROFILE}",
         "AWS_REGION": "{env:AWS_REGION}"
       }
-    }
+    },
 
     // postgres (pg-mcp-server) ─────────────────────────────────────────────
     // Feature-rich PostgreSQL MCP: pg_query, pg_explain, schema discovery,
@@ -85,7 +75,7 @@
     // Server listens at: http://localhost:8000/sse (default port)
     // Disabled globally — enabled only on the db agent.
     "postgres": {
-      "type": "sse",
+      "type": "remote",
       "url": "http://localhost:8000/sse",
       "enabled": true
     }
