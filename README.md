@@ -54,7 +54,7 @@ This configuration is built around a specific primary stack and knows it deeply:
 |---|---|
 | **Language** | Python 3.14 |
 | **Package manager** | uv (workspaces, lockfiles, venv) |
-| **Web framework** | FastAPI + orjson + pydantic-settings |
+| **Web framework** | FastAPI + pydantic-settings |
 | **ORM / DB** | SQLModel + asyncpg + PostgreSQL 17 |
 | **Migrations** | Alembic (async, with `alembic-postgresql-enum`) |
 | **Auth** | JWT-based (provider-agnostic pattern) |

@@ -42,7 +42,7 @@ Apply these on every file you touch, not just the files you create:
 ## FastAPI projects
 
 - `create_app()` factory, never a module-level app instantiation.
-- `default_response_class=ORJSONResponse` always.
+- Use the default `JSONResponse` — do not set `default_response_class`. FastAPI 0.130+ uses Pydantic's Rust-based serializer by default, making `ORJSONResponse` unnecessary. Do not import or use `ORJSONResponse`.
 - Router discovery via `registry` lists + `importlib` — never a long chain of `include_router()` calls.
 - `Annotated[Type, Depends(...)]` aliases for all injectable dependencies — never raw `Depends()` at the call site.
 - `response_model=` and `status_code=` on every endpoint decorator.

@@ -35,7 +35,7 @@ echo "3.14" > .python-version
 
 ```bash
 # Runtime (adjust to project needs — these are the baseline)
-uv add fastapi[standard] orjson pydantic-settings uvicorn[standard]
+uv add fastapi[standard] pydantic-settings uvicorn[standard]
 
 # Add if using DB:
 uv add sqlmodel asyncpg alembic alembic-postgresql-enum
@@ -284,7 +284,7 @@ import typing as t
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
-from fastapi.responses import ORJSONResponse, Response
+from fastapi.responses import JSONResponse, Response
 from fastapi import status
 import logging
 
@@ -298,7 +298,8 @@ def create_app() -> FastAPI:
         title="<Project Name>",
         version="0.1.0",
         debug=settings.ENV == Environment.LOCAL,
-        default_response_class=ORJSONResponse,
+        # default_response_class is omitted — FastAPI 0.130+ uses Pydantic's
+        # Rust-based serializer by default; ORJSONResponse is deprecated.
     )
     _set_routers(application=server)
     _set_middleware(application=server)
@@ -332,7 +333,7 @@ def _set_middleware(*, application: FastAPI) -> None:
             return await call_next(request)
         except Exception:
             logging.getLogger(__name__).exception("Unexpected error")
-            return ORJSONResponse(
+            return JSONResponse(
                 content={"detail": "Internal server error"},
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

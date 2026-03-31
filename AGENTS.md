@@ -550,7 +550,6 @@ Always use a `create_app()` factory function. Never create the app at module lev
 ```python
 # app.py
 from fastapi import FastAPI
-from fastapi.responses import ORJSONResponse
 
 from api import routers
 from api.settings import settings
@@ -563,7 +562,8 @@ def create_app() -> FastAPI:
         title="Project Name",
         version="0.1.0",
         debug=settings.ENV == Environment.LOCAL,
-        default_response_class=ORJSONResponse,  # always use orjson
+        # default_response_class is omitted — FastAPI 0.130+ uses Pydantic's
+        # Rust-based serializer by default; ORJSONResponse is deprecated.
     )
 
     _set_routers(application=server)
@@ -576,7 +576,7 @@ app = create_app()
 ```
 
 Key decisions, all non-negotiable:
-- `default_response_class=ORJSONResponse` — faster JSON serialization via `orjson`
+- No `default_response_class` — FastAPI 0.130+ uses Pydantic's Rust-based serializer by default, making `ORJSONResponse` unnecessary and deprecated
 - `debug=True` only in `LOCAL` environment
 - Routers, middleware, and startup tasks are set up in private helpers, not inline in `create_app()`
 
@@ -663,7 +663,7 @@ def _set_middleware(*, application: FastAPI) -> None:
             return await call_next(request)
         except Exception as exc:
             logging.getLogger(__name__).exception("Unexpected error")
-            return ORJSONResponse(
+            return JSONResponse(
                 content={"detail": repr(exc)},
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
