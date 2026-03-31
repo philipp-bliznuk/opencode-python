@@ -182,8 +182,7 @@
   // Requires node/npx to be available (verified by install.sh).
   "plugin": [
     "@tarquinen/opencode-dcp",  // prunes stale tool outputs from context
-    "opencode-handoff",          // session handoff prompts near context limit
-    "opencode-snip"              // filters verbose command output (requires snip binary)
+    "opencode-handoff"           // session handoff prompts near context limit
   ],
 
   // ── Global tool overrides ─────────────────────────────────────────────────

@@ -10,7 +10,7 @@
 #   4. Makes scripts/ruff-format.sh executable.
 #   5. Verifies the shell-strategy instructions file is present.
 #
-# Plugins (@tarquinen/opencode-dcp, opencode-handoff, opencode-snip) are loaded
+# Plugins (@tarquinen/opencode-dcp, opencode-handoff) are loaded
 # automatically by OpenCode at startup from the "plugin" array in opencode.jsonc
 # — no manual npm install is required here.
 
@@ -177,24 +177,6 @@ fi
 # Bun — required for custom TypeScript tools and frontend Docker image
 check_tool "bun" "bun" "bun" "custom TypeScript tools + frontend runtime"
 
-# snip — optional, used by the opencode-snip plugin (filters verbose command output)
-check_optional "snip" "snip" "edouard-claude/tap/snip" "opencode-snip plugin (command output filtering)"
-
-# macOS Gatekeeper quarantine fix for snip.
-# Homebrew-installed binaries from third-party taps are sometimes flagged by
-# macOS as unverified. Remove the quarantine attribute so snip can run.
-if has snip; then
-  SNIP_PATH="$(which snip 2>/dev/null || true)"
-  if [[ -n "$SNIP_PATH" ]] && xattr "$SNIP_PATH" 2>/dev/null | grep -q "com.apple.quarantine"; then
-    info "Removing macOS quarantine flag from snip..."
-    if xattr -d com.apple.quarantine "$SNIP_PATH" 2>/dev/null; then
-      ok "snip quarantine flag removed"
-    else
-      warn "Could not remove quarantine flag — try manually: sudo xattr -d com.apple.quarantine $SNIP_PATH"
-    fi
-  fi
-fi
-
 # shfmt — shell script formatter
 check_tool "shfmt" "shfmt" "shfmt" "shell script formatter"
 
@@ -318,7 +300,6 @@ echo ""
 echo -e "  ${BOLD}Plugins (auto-loaded by OpenCode at startup):${RESET}"
 dim "  @tarquinen/opencode-dcp  — context pruning"
 dim "  opencode-handoff         — session handoff prompts"
-dim "  opencode-snip            — command output filtering (requires snip binary)"
 
 echo ""
 echo -e "  ${BOLD}PostgreSQL MCP (pg-mcp-server):${RESET}"

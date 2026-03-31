@@ -153,7 +153,6 @@ plugin ships as a local file.
 |---|---|---|
 | `@tarquinen/opencode-dcp` | npm | Prunes stale tool outputs from context; extends session life on long tasks |
 | `opencode-handoff` | npm | Creates focused handoff prompts for continuing work in a new session |
-| `opencode-snip` | npm | Filters verbose command output (git, docker, pytest) before it hits the LLM context window. Requires the `snip` binary. |
 | `shell-strategy` | local instructions | Teaches agents to use non-interactive shell flags in all contexts. uv-aware (Python), bun-aware (frontend), no bare `python` or `pip`. |
 
 ---
@@ -242,7 +241,6 @@ OpenCode formats every file it writes. The formatter config mirrors the Neovim `
 | [ruff](https://docs.astral.sh/ruff/) | Python formatter | `brew install ruff` |
 | [node](https://nodejs.org) | MCP servers, npm plugins, prettier | `brew install node` |
 | [bun](https://bun.sh) | Custom TS tools, frontend runtime | `brew install bun` |
-| [snip](https://github.com/edouard-claude/snip) | `opencode-snip` plugin | `brew install edouard-claude/tap/snip` |
 | [shfmt](https://github.com/mvdan/sh) | Shell formatter | `brew install shfmt` |
 | [trivy](https://trivy.dev) | Docker image CVE scanning *(optional)* | `brew install trivy` |
 | [aws-sam-cli](https://aws.amazon.com/serverless/sam/) | `aws-serverless` MCP *(optional)* | `brew install aws-sam-cli` |
@@ -264,7 +262,7 @@ The script will:
 4. Make `scripts/ruff-format.sh` executable
 5. Verify the shell-strategy instructions file is present
 
-npm plugins (`@tarquinen/opencode-dcp`, `opencode-handoff`, `opencode-snip`) are loaded
+npm plugins (`@tarquinen/opencode-dcp`, `opencode-handoff`) are loaded
 automatically by OpenCode at startup — no separate install step is required.
 
 Because the config directory is a symlink to the repo, any `git pull` takes effect immediately — no re-running the install script.
