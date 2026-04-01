@@ -1,7 +1,7 @@
 ---
 description: Deep security audit. Identifies vulnerabilities across auth, injection, secrets exposure, dependencies, and cryptographic misuse. Never modifies files.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: anthropic/claude-sonnet-4-6
 temperature: 0.1
 color: "#F44336"
 permission:

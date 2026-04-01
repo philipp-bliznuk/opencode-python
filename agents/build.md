@@ -1,7 +1,7 @@
 ---
 description: Default build agent. Full tool access with Python project standards enforced on every action.
 mode: primary
-model: anthropic/claude-sonnet-4-5
+model: anthropic/claude-sonnet-4-6
 temperature: 0.3
 color: "#4CAF50"
 permission:

@@ -1,7 +1,7 @@
 ---
 description: Analyses SQLModel models, Alembic migrations, database queries, and live PostgreSQL performance via the postgres MCP server. No file modifications.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: anthropic/claude-sonnet-4-6
 temperature: 0.1
 color: "#2196F3"
 permission:

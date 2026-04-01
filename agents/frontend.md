@@ -1,7 +1,7 @@
 ---
 description: Primary frontend agent for full-stack web apps. Bun-first. Asks about framework and stack before writing anything. Knows the backend/frontend split architecture with FastAPI serving static assets in production.
 mode: primary
-model: anthropic/claude-sonnet-4-5
+model: anthropic/claude-sonnet-4-6
 temperature: 0.3
 color: "#26C6DA"
 permission:

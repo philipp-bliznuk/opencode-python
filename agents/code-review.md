@@ -1,7 +1,7 @@
 ---
 description: Reviews code changes for correctness, style compliance, and adherence to project standards. Invoked after completing any feature or significant change.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: anthropic/claude-sonnet-4-6
 temperature: 0.1
 color: "#2196F3"
 permission:

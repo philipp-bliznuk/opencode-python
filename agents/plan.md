@@ -1,7 +1,7 @@
 ---
 description: Read-only planning and analysis agent. Produces structured implementation plans without making any changes.
 mode: primary
-model: anthropic/claude-haiku-4-5
+model: anthropic/claude-sonnet-4-6
 temperature: 0.1
 color: "#2196F3"
 permission:

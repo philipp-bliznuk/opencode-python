@@ -1,7 +1,7 @@
 ---
 description: Targeted refactoring agent. Reduces complexity, improves naming, and enforces standards limits without changing behaviour.
 mode: primary
-model: anthropic/claude-sonnet-4-5
+model: anthropic/claude-sonnet-4-6
 temperature: 0.2
 color: "#FF9800"
 permission:

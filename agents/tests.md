@@ -1,7 +1,7 @@
 ---
 description: Generates pytest test cases following project testing patterns. Invoked when new modules or functions lack test coverage.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: anthropic/claude-sonnet-4-6
 temperature: 0.3
 color: "#4CAF50"
 permission:
