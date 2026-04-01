@@ -95,12 +95,12 @@ Switch between primary agents with `Tab` in the TUI.
 
 | Agent | Model | Color | Purpose |
 |---|---|---|---|
-| `build` | claude-sonnet-4-5 | Green | Full implementation. Enforces `AGENTS.md` on every write. Proactively invokes subagents after completing work. |
-| `plan` | claude-haiku-4-5 | Blue | Read-only analysis. Produces structured plans with file paths and compliance notes. Never writes code. |
-| `refactor` | claude-sonnet-4-5 | Amber | Reduces complexity, improves naming, enforces limits. Never changes behaviour. Show-before-apply workflow. |
+| `build` | claude-sonnet-4-6 | Green | Full implementation. Enforces `AGENTS.md` on every write. Proactively invokes subagents after completing work. |
+| `plan` | claude-sonnet-4-6 | Blue | Read-only analysis. Produces structured plans with file paths and compliance notes. Never writes code. |
+| `refactor` | claude-sonnet-4-6 | Amber | Reduces complexity, improves naming, enforces limits. Never changes behaviour. Show-before-apply workflow. |
 | `git` | claude-haiku-4-5 | Red | Git specialist. Conventional commits, branch management, PR descriptions. All git commands require approval. |
-| `debug` | claude-sonnet-4-5 | Deep orange | Diagnoses bugs and traces failure chains. Full read + bash access for diagnostics. Never edits files. |
-| `frontend` | claude-sonnet-4-5 | Cyan | Bun-first frontend specialist. Asks about framework/stack upfront. Knows the `backend/`+`frontend/` split, Vite proxy, and multi-stage Podman build. |
+| `debug` | claude-sonnet-4-6 | Deep orange | Diagnoses bugs and traces failure chains. Full read + bash access for diagnostics. Never edits files. |
+| `frontend` | claude-sonnet-4-6 | Cyan | Bun-first frontend specialist. Asks about framework/stack upfront. Knows the `backend/`+`frontend/` split, Vite proxy, and multi-stage Podman build. |
 
 ### Subagents
 
@@ -108,11 +108,11 @@ Invoke subagents via `@name` in a prompt, or they are triggered automatically by
 
 | Agent | Model | Purpose |
 |---|---|---|
-| `code-review` | claude-sonnet-4-5 | Reviews against `AGENTS.md`: Blocker / Suggestion / Nitpick tiers. |
-| `security` | claude-sonnet-4-5 | OWASP Top 10, auth flaws, secrets exposure, bandit findings. Critical→Info severity tiers. |
-| `tests` | claude-sonnet-4-5 | Generates pytest suites. Reads `conftest.py` before inventing fixtures. 95% coverage target. |
+| `code-review` | claude-sonnet-4-6 | Reviews against `AGENTS.md`: Blocker / Suggestion / Nitpick tiers. |
+| `security` | claude-sonnet-4-6 | OWASP Top 10, auth flaws, secrets exposure, bandit findings. Critical→Info severity tiers. |
+| `tests` | claude-sonnet-4-6 | Generates pytest suites. Reads `conftest.py` before inventing fixtures. 95% coverage target. |
 | `docs` | claude-haiku-4-5 | Google-style docstrings, README sections, `CLAUDE.md` files. |
-| `db` | claude-sonnet-4-5 | SQLModel models, Alembic migrations, query analysis. Catches N+1, unnamed constraints, unsafe migrations. |
+| `db` | claude-sonnet-4-6 | SQLModel models, Alembic migrations, query analysis. Catches N+1, unnamed constraints, unsafe migrations. |
 | `ci` | claude-haiku-4-5 | GitHub Actions, Containerfiles, Podman Compose, SAM templates, Makefiles. |
 | `research` | claude-haiku-4-5 | Fetches and synthesises external docs, RFCs, PEPs, library changelogs. Never writes to project files. |
 
