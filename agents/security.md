@@ -39,6 +39,7 @@ When invoked, audit the provided code (or entire codebase if no scope is given) 
 - Hardcoded credentials, API keys, tokens, passwords anywhere in source code
 - Secrets in log statements, error messages, or exception details
 - `.env` file committed to the repository
+- **Do not read the contents of `.env`** — audit its presence and `.gitignore` coverage structurally; never open or inspect its values
 - AWS credentials in code or config files
 - Overly permissive IAM policies or CORS origins (`*` in production)
 

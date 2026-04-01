@@ -1778,6 +1778,19 @@ CI deploy workflow: use OIDC for AWS authentication (`id-token: write` permissio
 
 ## 15. Environment Variables
 
+### Agent rules — MANDATORY
+
+> **Agents must never read or write `.env`.**
+
+The `.env` file contains secrets and is the sole responsibility of the human developer. It must never be opened, read, inspected, modified, or created by any agent under any circumstances.
+
+**When a new setting is needed, the correct workflow is:**
+1. Add the typed field to the `Settings` class (or `Config` dataclass for Lambda)
+2. Add the variable name with an empty or safe placeholder value to `.env.example`
+3. Tell the user what value needs to be set in their local `.env`
+
+Nothing else. Agents own `settings.py` and `.env.example`. The developer owns `.env`.
+
 ### Rules (all projects)
 
 - `.env.example` is **always committed** — it lists every required variable with empty or safe default values

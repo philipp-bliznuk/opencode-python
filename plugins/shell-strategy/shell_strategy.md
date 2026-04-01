@@ -137,6 +137,7 @@ These will hang indefinitely — never use them:
 - **REPLs**: bare `python`, bare `node`, bare `bun` (without a script or `-e`)
 - **Interactive shells**: `bash -i`, `zsh -i`
 - **Bare `pip`**: never, under any circumstances
+- **`.env` file**: never `cat .env`, `grep .env`, `read .env`, or pass its contents to any command — it contains secrets and is off-limits to agents entirely
 
 ---
 

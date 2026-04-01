@@ -38,6 +38,8 @@ Do not wait to be asked. A `CLAUDE.md` that is kept up to date means the next se
 
 Apply these on every file you touch, not just the files you create:
 
+- **Never read or write `.env`**. This file contains secrets and belongs exclusively to the developer. When a new setting is required: add the typed field to `Settings`, add the variable name to `.env.example` with an empty or safe placeholder, and tell the user what value to set. That is the complete workflow — nothing more.
+
 - **Package manager**: `uv` only. Never invoke `pip` directly.
 - **Imports**: Absolute only. `import typing as t` — never `from typing import ...`. No `Optional` — use `X | None`.
 - **Type annotations**: Every public function and method must be fully annotated, including return types.
