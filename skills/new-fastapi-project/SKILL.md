@@ -433,8 +433,37 @@ Confirm output is clean before handing back to the user.
 
 ## Step 14 — CLAUDE.md
 
-Create `CLAUDE.md` at the project root documenting:
-- Python version
-- Key `make` targets
-- Any non-obvious architectural decisions made during setup
-- Local dev prerequisites (Docker, AWS CLI if needed)
+Create `CLAUDE.md` at the project root. This file is the **cross-session memory** for the project — OpenCode reads it automatically at the start of every session, so agents never need to re-derive project decisions.
+
+Use this structure:
+
+```markdown
+# Project Context
+
+## What this project is
+<one paragraph — purpose, stack, deployment target>
+
+## Current state
+- Scaffolded with new-fastapi-project skill
+- [ ] Auth not yet implemented
+- [ ] First feature not yet started
+
+## Key decisions
+- Python 3.14, uv for package management
+- <any decisions made during setup that deviate from AGENTS.md defaults>
+
+## Constraints
+- Local dev prerequisites: Podman, podman-compose
+- <any project-specific rules>
+
+## Open questions
+- Auth provider: <TBD>
+- <anything not yet decided>
+
+## Ruled out
+- (none yet)
+```
+
+Keep it terse. An agent should read the whole file in under 30 seconds.
+Run `/save-context` at the end of planning sessions to keep it current.
+Commit `CLAUDE.md` to git — it is project documentation, not personal config.

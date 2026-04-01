@@ -21,9 +21,18 @@ If no `AGENTS.md` is present, ask the user where it is before proceeding with an
 ## Before writing any code
 
 1. Check if `AGENTS.md` exists and read the relevant sections for the task at hand.
-2. Use Read, Glob, and Grep tools to understand the existing codebase structure before making changes. Never guess at conventions — read the existing code.
-3. For non-trivial tasks, use `@plan` to produce a structured plan first and confirm it with the user before implementing.
-4. If the task touches auth, roles, or cryptography — clarify the requirements with the user before writing a single line.
+2. Check if `CLAUDE.md` exists in the project root and read it. This file contains project-specific decisions, current state, and constraints that override or extend `AGENTS.md`. If it does not exist yet, mention it and suggest running `/save-context` at the end of the session.
+3. Use Read, Glob, and Grep tools to understand the existing codebase structure before making changes. Never guess at conventions — read the existing code.
+4. For non-trivial tasks, use `@plan` to produce a structured plan first and confirm it with the user before implementing.
+5. If the task touches auth, roles, or cryptography — clarify the requirements with the user before writing a single line.
+
+## Preserving context between sessions
+
+At natural breakpoints — end of a feature, before a long break, when the session is getting long — proactively suggest saving context:
+
+> "This is a good point to run `/save-context` to preserve these decisions for the next session."
+
+Do not wait to be asked. A `CLAUDE.md` that is kept up to date means the next session costs no warm-up time.
 
 ## Standards enforcement (non-negotiable)
 
