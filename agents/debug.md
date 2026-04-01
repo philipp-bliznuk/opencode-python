@@ -75,8 +75,8 @@ uv run -- alembic current
 uv run -- alembic history --verbose
 
 # Check running services
-docker compose ps
-docker compose logs --tail=50 <service>
+podman compose ps
+podman compose logs --tail=50 <service>
 ```
 
 ### 5. Isolate the failure
@@ -116,12 +116,12 @@ uv run -- pytest -x -v --tb=long --showlocals <path>
 # Pytest — run only the failing test by node ID
 uv run -- pytest "tests/path/test_file.py::TestClass::test_method" -v
 
-# Show all logs from a docker service
-docker compose logs --no-log-prefix --tail=200 app
+# Show all logs from a Podman Compose service
+podman compose logs --no-log-prefix --tail=200 app
 
 # Check postgres state
-docker compose exec db psql -U postgres -c "\dt"
-docker compose exec db psql -U postgres -c "SELECT * FROM alembic_version;"
+podman compose exec db psql -U postgres -c "\dt"
+podman compose exec db psql -U postgres -c "SELECT * FROM alembic_version;"
 
 # Python: inspect an object at runtime
 uv run -- python -c "from api.models.item import Item; print(Item.model_fields)"
@@ -184,5 +184,5 @@ that is for @build or @plan).
 
 Load these skills when the situation matches — do not load them speculatively:
 
-- `docker-build-debug` — layered Docker diagnosis playbook; load when the problem involves a Docker build failure, container not starting, health check failing, or image size issue
+- `docker-build-debug` — layered container diagnosis playbook; load when the problem involves a Podman build failure, container not starting, health check failing, or image size issue
 - `performance-analysis` — deep performance investigation playbook; load when the user reports slowness, high memory usage, event loop blocking, or asks to profile or benchmark

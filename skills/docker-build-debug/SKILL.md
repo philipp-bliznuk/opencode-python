@@ -1,11 +1,11 @@
 ---
 name: docker-build-debug
-description: Layered diagnosis playbook for Docker build failures, container startup issues, docker-compose service problems, and image size/performance concerns. Load this when the user reports a Docker build failing, a container not starting, a health check failing, or any Docker or docker-compose issue.
+description: Layered diagnosis playbook for Podman/container build failures, container startup issues, Podman Compose service problems, and image size/performance concerns. Load this when the user reports a build failing, a container not starting, a health check failing, or any Podman or compose issue.
 license: MIT
 compatibility: opencode
 ---
 
-# Skill: Docker Build & Container Diagnosis
+# Skill: Podman Build & Container Diagnosis
 
 Work through each layer below in order. Most issues are caught by layers 1-3. Only proceed deeper if the earlier layers are clean.
 
@@ -31,25 +31,25 @@ A multi-stage build has two stages: `builder` (installs deps) and `final` (runs 
 ### Rule out stale cache first
 
 ```bash
-docker build --no-cache -f docker/app/Dockerfile .
+podman build --no-cache -f docker/app/Containerfile .
 ```
 
 If it passes with `--no-cache` but fails normally, the issue is a corrupted layer cache. Prune and rebuild:
 
 ```bash
-docker builder prune --filter type=exec.cachemount
-docker build -f docker/app/Dockerfile .
+podman builder prune --filter type=exec.cachemount
+podman build -f docker/app/Containerfile .
 ```
 
 ### `uv sync --frozen --no-dev` fails
 
-**Check 1 — `uv.lock` is not in `.dockerignore`**
+**Check 1 — `uv.lock` is not in `.containerignore`**
 
 ```bash
-grep 'uv.lock' .dockerignore
+grep 'uv.lock' .containerignore
 ```
 
-If `uv.lock` is excluded, uv cannot install in frozen mode. Remove it from `.dockerignore`.
+If `uv.lock` is excluded, uv cannot install in frozen mode. Remove it from `.containerignore`.
 
 **Check 2 — `pyproject.toml` and `uv.lock` are both COPYed before `RUN uv sync`**
 
@@ -69,11 +69,11 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 ```
 
-The `--mount` flag requires BuildKit. Confirm BuildKit is enabled:
+The `--mount` flag is supported natively by Podman via Buildah — no BuildKit flag needed.
+Confirm the build is using the correct engine:
 
 ```bash
-DOCKER_BUILDKIT=1 docker build -f docker/app/Dockerfile .
-# or: docker buildx build -f docker/app/Dockerfile .
+podman build -f docker/app/Containerfile .
 ```
 
 **Check 4 — Python version mismatch**
@@ -84,7 +84,7 @@ The base image Python version must satisfy `requires-python` in `pyproject.toml`
 grep 'requires-python' pyproject.toml
 # should be >=3.14
 
-docker run --rm python:3.14-slim python --version
+podman run --rm python:3.14-slim python --version
 # should be Python 3.14.x
 ```
 
@@ -112,8 +112,8 @@ COPY --from=builder /code/.venv /.venv
 Confirm the path matches where uv actually created the venv in the builder stage. Check:
 
 ```bash
-docker build --target builder -t debug-builder -f docker/app/Dockerfile . 2>&1
-docker run --rm debug-builder ls /code/
+podman build --target builder -t debug-builder -f docker/app/Containerfile . 2>&1
+podman run --rm debug-builder ls /code/
 # should show .venv/
 ```
 
@@ -128,8 +128,8 @@ ENV PATH="/.venv/bin:$PATH"
 This must be in the `final` stage `ENV` block, not only in `builder`. Test:
 
 ```bash
-docker run --rm <image> python --version
-docker run --rm <image> which gunicorn
+podman run --rm <image> python --version
+podman run --rm <image> which gunicorn
 ```
 
 ### Permission denied errors
@@ -138,7 +138,7 @@ Non-root user (`USER appuser`) must not need write access to directories owned b
 
 ```bash
 # Check ownership inside the container
-docker run --rm --entrypoint sh <image> -c "ls -la /code/"
+podman run --rm --entrypoint sh <image> -c "ls -la /code/"
 ```
 
 Fix: ensure `COPY` in the final stage happens before `USER appuser`, or use `--chown`:
@@ -154,9 +154,9 @@ USER appuser
 ## Layer 4 — Container starts but immediately exits
 
 ```bash
-docker compose logs app
+podman compose logs app
 # or:
-docker run --rm <image>   # see exit output directly
+podman run --rm <image>   # see exit output directly
 ```
 
 ### Missing environment variable
@@ -169,7 +169,7 @@ DB_URI
   Field required [type=missing]
 ```
 
-Check `.env` is present, is not in `.dockerignore`, and is passed to docker-compose:
+Check `.env` is present, is not in `.containerignore`, and is passed to docker-compose:
 
 ```yaml
 services:
@@ -206,7 +206,7 @@ db:
 `entrypoint.sh` runs `alembic upgrade head` — if migrations fail, the app may still start (it runs in background), but you will see errors in logs. Check:
 
 ```bash
-docker compose logs app | grep -i alembic
+podman compose logs app | grep -i alembic
 ```
 
 Common causes: DB not reachable (see above), migration has a constraint naming error, enum type out of sync.
@@ -216,14 +216,14 @@ Common causes: DB not reachable (see above), migration has a constraint naming e
 ## Layer 5 — Health check failing
 
 ```bash
-docker compose ps    # shows (unhealthy) status
-docker inspect <container_id> | jq '.[0].State.Health'
+podman compose ps    # shows (unhealthy) status
+podman inspect <container_id> | jq '.[0].State.Health'
 ```
 
 **Check 1 — endpoint is actually responding**
 
 ```bash
-docker exec <container> curl -sf http://localhost:8000/service/healthcheck/
+podman exec <container> curl -sf http://localhost:8000/service/healthcheck/
 ```
 
 If this fails: the app is crashing before handling requests. Check logs.
@@ -258,11 +258,11 @@ HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http:/
 ## Layer 6 — Image size unexpectedly large
 
 ```bash
-docker images <image-name>
-docker history <image-name>
+podman images <image-name>
+podman history <image-name>
 ```
 
-**Check `.dockerignore` completeness**
+**Check `.containerignore` completeness**
 
 These must be excluded:
 
@@ -275,7 +275,7 @@ tests/
 coverage/
 ruff.toml
 Makefile
-docker-compose.yml
+compose.yml
 **/__pycache__
 **/*.pyc
 **/.pytest_cache
@@ -291,7 +291,7 @@ The final stage should only `COPY --from=builder /code/.venv /.venv` and `COPY .
 `uv sync --frozen --no-dev` in the builder stage should exclude dev deps. Verify:
 
 ```bash
-docker run --rm <image> pip list | grep -E 'ruff|bandit|pytest|icecream'
+podman run --rm <image> pip list | grep -E 'ruff|bandit|pytest|icecream'
 # should return nothing
 ```
 
@@ -299,14 +299,14 @@ docker run --rm <image> pip list | grep -E 'ruff|bandit|pytest|icecream'
 
 ```bash
 # Show each layer's size and the command that created it (no truncation)
-docker history --no-trunc <image>
+podman history --no-trunc <image>
 
 # Interactive layer explorer with file-level diff per layer
 # Install: brew install dive
 dive <image>
 
 # Build context size — should be KBs, not MBs
-docker build --progress=plain . 2>&1 | grep -i "transferring context"
+podman build --progress=plain . 2>&1 | grep -i "transferring context"
 ```
 
 If `dive` shows a layer is unexpectedly large, the creating `RUN` or `COPY`
@@ -318,7 +318,7 @@ cache, accidentally copied directories.
 ## Layer 7 — Port conflicts
 
 ```bash
-docker compose up 2>&1 | grep 'port is already allocated'
+podman compose up 2>&1 | grep 'port is already allocated'
 ```
 
 The default mapping is `"8000:8000"` for app and `"5433:5432"` for DB. If another process holds those ports:
@@ -328,7 +328,7 @@ lsof -i :8000
 lsof -i :5433
 ```
 
-Change the host-side port in `docker-compose.yml` (left side of `:`):
+Change the host-side port in `compose.yml` (left side of `:`):
 
 ```yaml
 ports:
@@ -343,14 +343,13 @@ After diagnosing build and size issues, always run a CVE scan before pushing
 to a registry:
 
 ```bash
-# Docker Scout (built-in to Docker Desktop — no install required)
-docker scout quickview <image>
-docker scout cves <image>
-
 # Trivy (install: brew install trivy)
 trivy image <image>
 trivy image --severity HIGH,CRITICAL <image>    # high/critical only
 trivy image --ignore-unfixed <image>             # only CVEs with a known fix
+
+# Podman native (no extra install)
+podman image scan <image>
 ```
 
 **What to do with findings:**
@@ -363,7 +362,7 @@ trivy image --ignore-unfixed <image>             # only CVEs with a known fix
 | Any severity, no fix available | Accept and document; re-check monthly |
 
 **If the CVE is in the base image** (`python:3.14-slim`): check if a newer
-patch of the base image has the fix (`docker pull python:3.14-slim && trivy
+patch of the base image has the fix (`podman pull python:3.14-slim && trivy
 image python:3.14-slim`). If not, the only option is a distroless or custom
 base image.
 
@@ -374,4 +373,4 @@ add <pkg>@latest`, re-lock with `uv lock`, and rebuild.
 
 ## Handoff
 
-Once the root cause is identified, summarise using the debug handoff format and pass to `@build` for the fix, or directly apply if it is a configuration change (Dockerfile, docker-compose.yml, .dockerignore).
+Once the root cause is identified, summarise using the debug handoff format and pass to `@build` for the fix, or directly apply if it is a configuration change (Containerfile, compose.yml, .containerignore).

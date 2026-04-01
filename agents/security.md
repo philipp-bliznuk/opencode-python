@@ -65,9 +65,9 @@ When invoked, audit the provided code (or entire codebase if no scope is given) 
 - Overly verbose error messages that aid enumeration attacks
 
 ### 8. Infrastructure & configuration (if present)
-- Dockerfile running as root (`USER` instruction missing)
+- Containerfile/Dockerfile running as root (`USER` instruction missing) — Podman is rootless but the production image must still declare a non-root `USER`
 - Exposed ports that should not be public
-- Secrets passed as Docker build args (visible in image history)
+- Secrets passed as build args (visible in image history — use `--secret` flag instead)
 - S3 bucket public ACLs
 - Lambda functions with overly broad IAM permissions (`*` on resource)
 

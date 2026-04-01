@@ -11,7 +11,7 @@ compatibility: opencode
 
 Do not begin writing files until you have answers to all of these:
 
-1. **Project name** — used for the directory, package name, and Docker image tag
+1. **Project name** — used for the directory, package name, and Podman image tag
 2. **Database** — PostgreSQL (SQLModel + asyncpg + Alembic)? Or no DB?
 3. **Protected branches** — which branch names should be blocked from direct commits? (default: `main`, `dev`, `stage`, `prod`)
 4. **AWS region** — used in CI/CD if deploying to ECS (default: `us-east-1`)
@@ -195,20 +195,20 @@ uv_install: ## Install all dependencies
 uv_lock: ## Regenerate lockfile
 	$(UV) lock
 
-build: ## Build Docker image
-	docker compose build
+build: ## Build Podman image
+	podman compose build
 
 up: ## Start services
-	docker compose up -d
+	podman compose up -d
 
 down: ## Stop services
-	docker compose down
+	podman compose down
 
 logs: ## Follow app logs
-	docker compose logs -f app
+	podman compose logs -f app
 
 restart: ## Restart app service
-	docker compose restart app
+	podman compose restart app
 ```
 
 If the project uses a DB, add:
@@ -239,7 +239,7 @@ pg_mcp_stop: ## Stop the PostgreSQL MCP server
 ```
 
 `# PROJECT-SPECIFIC: adjust the connection string in pg_mcp_start to match your
-# docker-compose.yml DB name, user, password, and port.`
+# compose.yml DB name, user, password, and port.`
 
 ---
 
@@ -382,11 +382,11 @@ Use the canonical version from `AGENTS.md` Section 13. If this is a DB project, 
 ## Step 11 — Docker (if web service)
 
 Create the following files using the canonical content from `AGENTS.md` Section 14:
-- `docker/app/Dockerfile`
+- `docker/app/Containerfile`
 - `docker/app/entrypoint.sh` (make executable: `chmod +x docker/app/entrypoint.sh`)
-- `docker-compose.yml`
+- `compose.yml`
 - `gunicorn.conf.py`
-- `.dockerignore`
+- `.containerignore`
 
 ---
 

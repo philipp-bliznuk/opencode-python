@@ -50,11 +50,11 @@ PG_MCP_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/<dbname> \
 Resources are distinct from tools — they are read via the MCP resource protocol,
 not as tool calls. Both are available once `postgres_connect` returns a `conn_id`.
 
-**Connection string** (matches docker-compose.yml port mapping):
+**Connection string** (matches compose.yml port mapping):
 ```
 postgresql://postgres:postgres@localhost:5433/<dbname>
 ```
-`# PROJECT-SPECIFIC: adjust to match the project's docker-compose.yml`
+`# PROJECT-SPECIFIC: adjust to match the project's compose.yml`
 
 **Workflow for every live analysis session:**
 1. Call `postgres_connect` with the connection string → get `conn_id`

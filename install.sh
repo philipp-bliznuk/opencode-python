@@ -174,14 +174,20 @@ else
   ask_install "node" "node" "npx / sequential-thinking MCP"
 fi
 
-# Bun — required for custom TypeScript tools and frontend Docker image
+# Bun — required for custom TypeScript tools and frontend container image
 check_tool "bun" "bun" "bun" "custom TypeScript tools + frontend runtime"
+
+# Podman — container runtime (replaces Docker)
+check_tool "podman" "podman" "podman" "container runtime (build + run containers)"
+
+# podman-compose — Compose support for Podman
+check_tool "podman-compose" "podman-compose" "podman-compose" "Podman Compose (compose.yml support)"
 
 # shfmt — shell script formatter
 check_tool "shfmt" "shfmt" "shfmt" "shell script formatter"
 
-# trivy — Docker image CVE scanner (optional but recommended before production pushes)
-check_optional "trivy" "trivy" "trivy" "Docker image security scanning (CVE audit)"
+# trivy — container image CVE scanner (optional but recommended before production pushes)
+check_optional "trivy" "trivy" "trivy" "container image CVE scanning (optional)"
 
 # AWS SAM CLI — optional (only needed for serverless projects)
 check_optional "sam" "aws-sam-cli" "aws-sam-cli" "aws-serverless MCP / SAM deployments"

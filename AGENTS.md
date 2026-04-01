@@ -491,9 +491,9 @@ project-name/
 ├── app.py                  # FastAPI app factory (create_app)
 ├── docker/
 │   └── app/
-│       ├── Dockerfile
+│       ├── Containerfile
 │       └── entrypoint.sh
-├── docker-compose.yml
+├── compose.yml
 ├── gunicorn.conf.py
 ├── Makefile
 ├── migrations/             # Alembic (if using DB)
@@ -1574,12 +1574,16 @@ hotfix:
 
 > **Ask the user** which deployment target applies before implementing this section.
 
-### FastAPI Web Service — Docker
+### FastAPI Web Service — Podman
 
-#### Multi-Stage Dockerfile
+#### Multi-Stage Containerfile
+
+Podman uses `Containerfile` by convention but also accepts `Dockerfile` — either name works.
+Use `podman build` and `podman compose` in place of `docker build` and `docker compose`.
+Podman is daemonless and rootless by default — no `sudo` required.
 
 ```dockerfile
-# docker/app/Dockerfile
+# docker/app/Containerfile
 
 # ── Stage 1: builder ──────────────────────────────────────────────────────────
 FROM python:3.14-slim AS builder
@@ -1621,7 +1625,9 @@ HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
 CMD ["/code/docker/app/entrypoint.sh"]
 ```
 
-#### `.dockerignore`
+#### `.containerignore`
+
+Podman reads `.containerignore` (preferred) and falls back to `.dockerignore`.
 
 ```
 .git
@@ -1632,7 +1638,7 @@ tests/
 coverage/
 ruff.toml
 Makefile
-docker-compose.yml
+compose.yml
 **/__pycache__
 **/*.pyc
 **/.pytest_cache
@@ -1677,15 +1683,19 @@ accesslog = "-"
 forwarded_allow_ips = "*"
 ```
 
-#### `docker-compose.yml` (local dev)
+#### `compose.yml` (local dev)
+
+Podman Compose uses `compose.yml` (the modern Compose spec filename).
+Run with `podman compose up -d`. Podman reads `compose.yml`, `docker-compose.yml`,
+and `docker-compose.yaml` — `compose.yml` is preferred going forward.
 
 ```yaml
-# docker-compose.yml
+# compose.yml
 services:
   app:
     build:
       context: .
-      dockerfile: docker/app/Dockerfile
+      dockerfile: docker/app/Containerfile
     volumes:
       - .:/code:cached
     ports:
@@ -1716,6 +1726,10 @@ services:
 volumes:
   postgres_data:
 ```
+
+> **Note**: `podman compose` requires `podman-compose` (`brew install podman-compose`) or
+> Podman Desktop's built-in compose support. All `docker compose` commands map directly to
+> `podman compose` — the syntax is identical.
 
 ### Lambda Function — AWS SAM
 
@@ -1871,7 +1885,7 @@ uv_install: ## Install all dependencies
 uv_lock: ## Regenerate the lockfile
 	$(UV) lock
 
-# PROJECT-SPECIFIC: add docker targets for web services
+# PROJECT-SPECIFIC: add podman targets for web services
 # build up down logs restart
 #
 # PROJECT-SPECIFIC: add migration targets for DB projects

@@ -40,7 +40,7 @@ of them and migration is explicitly out of scope.
 
 ```bash
 bun install                       # install dependencies
-bun install --frozen-lockfile     # CI / Docker (lockfile must not change)
+bun install --frozen-lockfile     # CI / Podman (lockfile must not change)
 bun add <pkg>                     # add runtime dependency
 bun add -d <pkg>                  # add dev dependency
 bun run <script>                  # run a package.json script
@@ -63,7 +63,7 @@ bun run build   # Vite production build → dist/
 bun run preview # preview production build locally
 ```
 
-The Vite config must always include `server.host: true` (required for Docker) and the
+The Vite config must always include `server.host: true` (required for Podman containers) and the
 API proxy to the backend service.
 
 ---
@@ -281,7 +281,7 @@ reorganising anything.
 
 ## Local development: two containers
 
-In `docker-compose.yml`, frontend and backend run as separate services:
+In `compose.yml`, frontend and backend run as separate services:
 
 ```yaml
 frontend:
@@ -297,14 +297,14 @@ frontend:
     - backend                   # PROJECT-SPECIFIC: match your backend service name
 ```
 
-The Vite dev server proxies `/api/*` → `http://backend:8000` (docker service hostname).
+The Vite dev server proxies `/api/*` → `http://backend:8000` (Podman Compose service hostname).
 No CORS configuration is needed for local development because of this proxy.
 
 ---
 
-## Production: single Docker image, FastAPI serves the frontend
+## Production: single Podman image, FastAPI serves the frontend
 
-A multi-stage Dockerfile builds the frontend first, then copies `dist/` into the Python image:
+A multi-stage Containerfile builds the frontend first, then copies `dist/` into the Python image:
 
 ```dockerfile
 # ── Stage 0: frontend builder ────────────────────────────────────────────────
@@ -374,7 +374,7 @@ local dev where the frontend has not been built into the image.
 Proactively invoke subagents — do not wait to be asked:
 
 - `@code-review` — after completing any component, page, hook, or utility module
-- `@ci` — whenever touching the Dockerfile or docker-compose for the frontend build stage
+- `@ci` — whenever touching the Containerfile or compose.yml for the frontend build stage
 - `@security` — whenever implementing auth flows, token storage, or third-party OAuth on
   the frontend
 

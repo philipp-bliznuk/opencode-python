@@ -114,16 +114,16 @@ indefinitely and time out.
 
 ---
 
-## Docker
+## Podman
 
 | Action | BAD | GOOD |
 |---|---|---|
-| Run container | `docker run -it image` | `docker run image` |
-| Exec in container | `docker exec -it container bash` | `docker exec container cmd` |
-| Build | `docker build .` | `docker build --progress=plain .` |
-| Compose up | `docker compose up` | `docker compose up -d` |
-| Run command in service | `docker compose run app python` | `docker compose run --rm app uv run -- python -c "code"` |
-| Follow logs | `docker compose logs app` | `docker compose logs --tail=50 app` |
+| Run container | `podman run -it image` | `podman run image` |
+| Exec in container | `podman exec -it container bash` | `podman exec container cmd` |
+| Build | `podman build .` | `podman build --progress=plain .` |
+| Compose up | `podman compose up` | `podman compose up -d` |
+| Run command in service | `podman compose run app python` | `podman compose run --rm app uv run -- python -c "code"` |
+| Follow logs | `podman compose logs app` | `podman compose logs --tail=50 app` |
 
 ---
 

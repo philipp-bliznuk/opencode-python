@@ -1,6 +1,6 @@
 ---
 name: new-frontend-feature
-description: Step-by-step scaffold for adding a frontend to an existing FastAPI project. Covers bun setup, Vite config, Biome, TypeScript, docker-compose dev containers, multi-stage Dockerfile production build, and FastAPI static serving. Load this when the user asks to add a UI, frontend, React/Vue/Svelte component, or web interface to a Python backend project.
+description: Step-by-step scaffold for adding a frontend to an existing FastAPI project. Covers bun setup, Vite config, Biome, TypeScript, Podman Compose dev containers, multi-stage Containerfile production build, and FastAPI static serving. Load this when the user asks to add a UI, frontend, React/Vue/Svelte component, or web interface to a Python backend project.
 license: MIT
 compatibility: opencode
 ---
@@ -17,7 +17,7 @@ Do not write any files until you have answers to all of these:
    - If it's already split into `backend/` and `frontend/`: confirm and continue
    - If it's a single-root FastAPI project: you will create a `frontend/` sibling directory
      alongside the existing source; ask before touching the backend structure
-4. **Existing Docker setup** — is there already a `Dockerfile` and `docker-compose.yml`?
+4. **Existing Podman setup** — is there already a `Containerfile` and `compose.yml`?
    Show the user what you will change before touching them.
 
 ---
@@ -130,11 +130,11 @@ export default defineConfig({
     },
   },
   server: {
-    host: true,     // required for Docker — listens on 0.0.0.0 not just localhost
+    host: true,     // required for Podman containers — listens on 0.0.0.0 not just localhost
     port: 5173,
     proxy: {
       "/api": {
-        // In docker-compose: use the backend service name as hostname
+        // In Podman Compose: use the backend service name as hostname
         // For bare local dev (no Docker): change to http://localhost:8000
         target: "http://backend:8000",
         changeOrigin: true,
@@ -185,16 +185,16 @@ Add to the **root** `.gitignore`:
 frontend/node_modules/
 frontend/dist/
 
-# Backend static (populated at Docker build time)
+# Backend static (populated at Podman build time)
 backend/api/static/dist/
 # PROJECT-SPECIFIC: adjust path to match your FastAPI static directory
 ```
 
 ---
 
-## Step 7 — docker-compose: add frontend service
+## Step 7 — compose.yml: add frontend service
 
-Add to the existing `docker-compose.yml`. Show the user the diff before applying:
+Add to the existing `compose.yml`. Show the user the diff before applying:
 
 ```yaml
   frontend:
@@ -214,7 +214,7 @@ Add to the existing `docker-compose.yml`. Show the user the diff before applying
 The frontend dev server proxies all `/api/*` requests to the `backend` service over the
 internal Docker network. No CORS configuration is needed for local development.
 
-> **Note**: the proxy target in `vite.config.ts` uses the Docker service name `backend`
+> **Note**: the proxy target in `vite.config.ts` uses the Podman Compose service name `backend`
 > as the hostname. For running Vite outside of Docker (bare `bun run dev`), change the
 > target to `http://localhost:8000` or extract it to an env var:
 > ```ts
@@ -224,9 +224,9 @@ internal Docker network. No CORS configuration is needed for local development.
 
 ---
 
-## Step 8 — Dockerfile: add frontend build stage
+## Step 8 — Containerfile: add frontend build stage
 
-Show the user the full diff before modifying the Dockerfile.
+Show the user the full diff before modifying the Containerfile.
 
 Add a new first stage **before** the existing Python builder stage:
 
@@ -374,7 +374,7 @@ Confirm:
 
 Then start the full stack:
 ```bash
-docker compose up --build
+podman compose up --build
 ```
 
 Confirm:

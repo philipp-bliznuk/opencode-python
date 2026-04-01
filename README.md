@@ -30,7 +30,7 @@ logic, architecture decisions, debugging — rather than wasting conversation on
   everywhere, `Controller(Generic[ModelType])` repository pattern, `model_factory()`
   for schema derivation, `selectin` loading on all relationships — agents know these
   patterns and apply them without being asked
-- **Docker**: multi-stage builds, layer ordering as a caching discipline, non-root
+- **Podman**: multi-stage Containerfiles, layer ordering as a caching discipline, non-root
   execution, uv-managed venv, `python:3.x-slim` only
 - **Performance**: async-first with explicit rules against blocking I/O, N+1
   awareness, algorithmic complexity consciousness — as a passive quality signal,
@@ -61,7 +61,7 @@ This configuration is built around a specific primary stack and knows it deeply:
 | **Testing** | pytest + asyncio + xdist + pytest-socket (95% branch coverage) |
 | **Linting** | ruff (46 rule sets, preview mode, unsafe fixes) |
 | **Security** | bandit (strict profile, zero suppressions) |
-| **Container** | Docker multi-stage, gunicorn + UvicornWorker |
+| **Container** | Podman multi-stage, gunicorn + UvicornWorker |
 | **Serverless** | AWS SAM + python-uv build method |
 | **Frontend** (occasional) | bun + Vite + Biome + TypeScript strict |
 | **CI/CD** | GitHub Actions + OIDC + composite setup action |
@@ -100,7 +100,7 @@ Switch between primary agents with `Tab` in the TUI.
 | `refactor` | claude-sonnet-4-5 | Amber | Reduces complexity, improves naming, enforces limits. Never changes behaviour. Show-before-apply workflow. |
 | `git` | claude-haiku-4-5 | Red | Git specialist. Conventional commits, branch management, PR descriptions. All git commands require approval. |
 | `debug` | claude-sonnet-4-5 | Deep orange | Diagnoses bugs and traces failure chains. Full read + bash access for diagnostics. Never edits files. |
-| `frontend` | claude-sonnet-4-5 | Cyan | Bun-first frontend specialist. Asks about framework/stack upfront. Knows the `backend/`+`frontend/` split, Vite proxy, and multi-stage Docker build. |
+| `frontend` | claude-sonnet-4-5 | Cyan | Bun-first frontend specialist. Asks about framework/stack upfront. Knows the `backend/`+`frontend/` split, Vite proxy, and multi-stage Podman build. |
 
 ### Subagents
 
@@ -113,7 +113,7 @@ Invoke subagents via `@name` in a prompt, or they are triggered automatically by
 | `tests` | claude-sonnet-4-5 | Generates pytest suites. Reads `conftest.py` before inventing fixtures. 95% coverage target. |
 | `docs` | claude-haiku-4-5 | Google-style docstrings, README sections, `CLAUDE.md` files. |
 | `db` | claude-sonnet-4-5 | SQLModel models, Alembic migrations, query analysis. Catches N+1, unnamed constraints, unsafe migrations. |
-| `ci` | claude-haiku-4-5 | GitHub Actions, Dockerfiles, docker-compose, SAM templates, Makefiles. |
+| `ci` | claude-haiku-4-5 | GitHub Actions, Containerfiles, Podman Compose, SAM templates, Makefiles. |
 | `research` | claude-haiku-4-5 | Fetches and synthesises external docs, RFCs, PEPs, library changelogs. Never writes to project files. |
 
 ### Automatic subagent invocations (by `build`)
@@ -137,7 +137,7 @@ Skills are on-demand playbooks loaded by agents when the situation matches. They
 | `new-lambda-project` | `build`, `ci` | "new Lambda", "new SAM", "serverless" |
 | `alembic-migration` | `build`, `db` | "add migration", "modify model", "schema change" |
 | `pr-checklist` | `git`, `code-review` | "open PR", "ready to merge", "prepare PR" |
-| `docker-build-debug` | `debug`, `ci` | "docker build failing", "container issue" |
+| `docker-build-debug` | `debug`, `ci` | "podman build failing", "container issue", "container not starting" |
 | `new-frontend-feature` | `build`, `frontend` | "add frontend", "add UI", "React/Vue/Svelte component" |
 | `performance-analysis` | `build`, `debug` | "slow", "high memory", "profile", "optimise", "benchmark" |
 
@@ -177,7 +177,7 @@ Unlike the other MCP servers which start on demand as child processes,
 before invoking the `db` agent for live analysis.
 
 ```bash
-# Start (requires your docker-compose DB to be running)
+# Start (requires your podman compose DB to be running)
 make pg_mcp_start        # in projects that have this Makefile target
 
 # Or start manually:
@@ -241,8 +241,10 @@ OpenCode formats every file it writes. The formatter config mirrors the Neovim `
 | [ruff](https://docs.astral.sh/ruff/) | Python formatter | `brew install ruff` |
 | [node](https://nodejs.org) | MCP servers, npm plugins, prettier | `brew install node` |
 | [bun](https://bun.sh) | Custom TS tools, frontend runtime | `brew install bun` |
+| [podman](https://podman.io) | Container runtime | `brew install podman` |
+| [podman-compose](https://github.com/containers/podman-compose) | Compose support | `brew install podman-compose` |
 | [shfmt](https://github.com/mvdan/sh) | Shell formatter | `brew install shfmt` |
-| [trivy](https://trivy.dev) | Docker image CVE scanning *(optional)* | `brew install trivy` |
+| [trivy](https://trivy.dev) | Container image CVE scanning *(optional)* | `brew install trivy` |
 | [aws-sam-cli](https://aws.amazon.com/serverless/sam/) | `aws-serverless` MCP *(optional)* | `brew install aws-sam-cli` |
 
 ---
