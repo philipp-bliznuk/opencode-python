@@ -163,44 +163,43 @@ plugin ships as a local file.
 
 One MCP server is configured: the PostgreSQL live analysis server. It is disabled globally and re-enabled only on the `db` agent.
 
-| Server     | Runs via                  | Scoped to | Purpose                                                                        |
-| ---------- | ------------------------- | --------- | ------------------------------------------------------------------------------ |
-| `postgres` | `uvx pg-mcp-server` (SSE) | `db`      | Live DB introspection: `pg_query`, `pg_explain`, schema discovery, table stats |
+| Server     | Runs via                   | Scoped to | Purpose                                                                                                    |
+| ---------- | -------------------------- | --------- | ---------------------------------------------------------------------------------------------------------- |
+| `postgres` | `uvx postgres-mcp` (stdio) | `db`      | Live DB introspection: schema discovery, SQL execution, EXPLAIN analysis, index recommendations, DB health |
 
-### PostgreSQL MCP (`pg-mcp-server`)
+### PostgreSQL MCP (`crystaldba/postgres-mcp`)
 
-Unlike the other MCP servers which start on demand as child processes,
-`pg-mcp-server` runs as a **persistent SSE server** and must be started
-before invoking the `db` agent for live analysis.
+The server is **spawned on demand** by OpenCode as a local stdio process — no manual
+start/stop required. OpenCode launches it automatically when the `db` agent is active.
 
-```bash
-# Start (requires your podman compose DB to be running)
-make pg_mcp_start        # in projects that have this Makefile target
+**Setup:** create an `opencode.json` at the project root (git-ignored, never committed)
+with the local connection string:
 
-# Or start manually:
-PG_MCP_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/<dbname> \
-  uvx stuzero/pg-mcp-server
-
-# Stop
-make pg_mcp_stop
-# or: pkill -f pg-mcp-server
+```json
+{
+  "mcp": {
+    "postgres": {
+      "environment": {
+        "DATABASE_URI": "postgresql://postgres:postgres@localhost:5433/<dbname>"
+      }
+    }
+  }
+}
 ```
 
-The server listens at `http://localhost:8000/sse` by default and runs
-**read-only** — it cannot modify your database. Safe to leave running
-for an entire development session.
+OpenCode merges this on top of the global config. The `db` agent picks up `DATABASE_URI`
+automatically and can:
 
-Once running, the `db` agent connects automatically and can:
+- Inspect schemas, tables, columns, and indexes via `postgres_list_schemas` / `postgres_get_object_details`
+- Execute SQL via `postgres_execute_sql`
+- Run `EXPLAIN (ANALYZE, BUFFERS)` via `postgres_explain_query`
+- Find slow queries via `postgres_get_top_queries`
+- Get index recommendations via `postgres_analyze_workload_indexes` / `postgres_analyze_query_indexes`
+- Run a full DB health check via `postgres_analyze_db_health`
 
-- Execute any read-only SQL via `pg_query`
-- Run `EXPLAIN (ANALYZE, BUFFERS)` via `pg_explain`
-- Inspect schemas, tables, columns, and indexes
-- Query `pg_stat_statements` to find slow queries
-- Query `pg_stat_user_tables` to detect table bloat
-
-**Adding Makefile targets to a project:** when scaffolding a new FastAPI project
-with a DB, the `new-fastapi-project` skill and the `build` agent will both add
-`pg_mcp_start` / `pg_mcp_stop` targets automatically.
+**When scaffolding a new FastAPI project with a DB**, the `new-fastapi-project` skill
+creates the `opencode.json` stub automatically (Step 11b) and adds it to `.gitignore`
+and `.containerignore`.
 
 ---
 
@@ -308,10 +307,11 @@ export EDITOR=nvim   # or vim, code --wait, etc.
 
 ### PostgreSQL MCP (live DB introspection)
 
-The `postgres` MCP is already configured and active in `opencode.jsonc`. It uses
-`pg-mcp-server` (SSE) and is scoped to the `db` agent. See the
-[PostgreSQL MCP setup](#postgresql-mcp-pg-mcp-server) section under MCP Servers
-for start/stop instructions and usage.
+The `postgres` MCP is already configured in `opencode.jsonc` and scoped to the `db`
+agent. To activate it for a project, create a git-ignored `opencode.json` at the
+project root with the local connection string. See the
+[PostgreSQL MCP setup](#postgresql-mcp-crystaldbapostgres-mcp) section above for
+the exact format.
 
 ---
 
@@ -335,3 +335,19 @@ Example: add project-specific instructions:
   "instructions": ["./CLAUDE.md"]
 }
 ```
+
+Example: set the PostgreSQL connection string for the `db` agent (git-ignored):
+
+```json
+{
+  "mcp": {
+    "postgres": {
+      "environment": {
+        "DATABASE_URI": "postgresql://postgres:postgres@localhost:5433/myproject"
+      }
+    }
+  }
+}
+```
+
+Add `opencode.json` to `.gitignore` and `.containerignore` — it contains credentials.

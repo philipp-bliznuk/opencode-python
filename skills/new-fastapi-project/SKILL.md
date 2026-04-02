@@ -54,6 +54,7 @@ uv add --group test gevent pytest pytest-asyncio pytest-cov pytest-env \
 ## Step 3 — `pyproject.toml`
 
 Replace the generated `pyproject.toml` with the full canonical version from `AGENTS.md` Section 3. Key substitutions:
+
 - `name = "<project-name>"`
 - `src = ["<package-dir>"]` — match the actual source directory (e.g. `"api"`)
 - `known-first-party = ["<package-dir>"]`
@@ -65,6 +66,7 @@ Replace the generated `pyproject.toml` with the full canonical version from `AGE
 - Add `"sqlalchemy.orm.declared_attr"` to `classmethod-decorators` in `[tool.ruff.lint.pep8-naming]`
 
 Add `[tool.pytest.ini_options] env = [...]` with all required settings injected for the test run:
+
 ```toml
 [tool.pytest.ini_options]
 env = [
@@ -106,6 +108,9 @@ build/
 
 # Environment
 .env
+
+# OpenCode project-level config (contains DB credentials — never commit)
+opencode.json
 
 # Tools
 .ruff_cache/
@@ -225,21 +230,7 @@ migration_downgrade: ## Rollback one migration
 
 migration_history: ## Show migration history
 	$(UV) run -- alembic history --verbose
-
-pg_mcp_start: ## Start the PostgreSQL MCP server for live DB analysis (db agent)
-	@echo "Starting pg-mcp-server on http://localhost:8000/sse ..."
-	@PG_MCP_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/$(shell basename $(CURDIR)) \
-		uvx stuzero/pg-mcp-server &
-	@echo "pg-mcp-server started. Stop with: make pg_mcp_stop"
-	@echo "Connect string: postgresql://postgres:postgres@localhost:5433/$(shell basename $(CURDIR))"
-	@echo "Note: adjust the connection string if your DB name differs from the project directory name."
-
-pg_mcp_stop: ## Stop the PostgreSQL MCP server
-	@pkill -f "pg-mcp-server" && echo "pg-mcp-server stopped." || echo "pg-mcp-server was not running."
 ```
-
-`# PROJECT-SPECIFIC: adjust the connection string in pg_mcp_start to match your
-# compose.yml DB name, user, password, and port.`
 
 ---
 
@@ -356,12 +347,15 @@ app = create_app()
 ## Step 10 — GitHub Actions
 
 ### `.github/CODEOWNERS`
+
 ```
 * <github-owner-from-user-answer>
 ```
 
 ### `.github/labeler.yml`
+
 Use the canonical version from `AGENTS.md` Section 13. Add project-specific labels:
+
 ```yaml
 api:
   - changed-files:
@@ -372,9 +366,11 @@ migrations:
 ```
 
 ### `.github/actions/setup_env/action.yml`
+
 Use the canonical version from `AGENTS.md` Section 13 verbatim.
 
 ### `.github/workflows/pr_check.yml`
+
 Use the canonical version from `AGENTS.md` Section 13. If this is a DB project, add the `Tests` job with a `postgres:17-alpine` service container.
 
 ---
@@ -382,11 +378,37 @@ Use the canonical version from `AGENTS.md` Section 13. If this is a DB project, 
 ## Step 11 — Docker (if web service)
 
 Create the following files using the canonical content from `AGENTS.md` Section 14:
+
 - `docker/app/Containerfile`
 - `docker/app/entrypoint.sh` (make executable: `chmod +x docker/app/entrypoint.sh`)
 - `compose.yml`
 - `gunicorn.conf.py`
-- `.containerignore`
+- `.containerignore` — add `opencode.json` to the standard template (it contains DB credentials)
+
+---
+
+## Step 11b — OpenCode project config (if DB project)
+
+Create `opencode.json` at the project root. This file is **git-ignored** — it holds the
+local DB connection string for the `db` agent's PostgreSQL MCP server.
+
+```json
+{
+  "mcp": {
+    "postgres": {
+      "environment": {
+        "DATABASE_URI": "postgresql://postgres:postgres@localhost:5433/<project-name>"
+      }
+    }
+  }
+}
+```
+
+`# PROJECT-SPECIFIC: adjust user, password, port, and DB name to match compose.yml`
+
+The `db` agent reads `DATABASE_URI` from this file to connect to the local database.
+OpenCode merges this on top of the global `~/.config/opencode/opencode.jsonc` — no
+other configuration is needed.
 
 ---
 
@@ -399,6 +421,7 @@ uv run -- alembic init --template async migrations
 Then replace `migrations/env.py` with the canonical async version from `AGENTS.md` Section 8.
 
 Replace the `[alembic]` section of `alembic.ini`:
+
 ```ini
 [alembic]
 script_location = migrations
@@ -441,26 +464,32 @@ Use this structure:
 # Project Context
 
 ## What this project is
+
 <one paragraph — purpose, stack, deployment target>
 
 ## Current state
+
 - Scaffolded with new-fastapi-project skill
 - [ ] Auth not yet implemented
 - [ ] First feature not yet started
 
 ## Key decisions
+
 - Python 3.14, uv for package management
 - <any decisions made during setup that deviate from AGENTS.md defaults>
 
 ## Constraints
+
 - Local dev prerequisites: Podman, podman-compose
 - <any project-specific rules>
 
 ## Open questions
+
 - Auth provider: <TBD>
 - <anything not yet decided>
 
 ## Ruled out
+
 - (none yet)
 ```
 

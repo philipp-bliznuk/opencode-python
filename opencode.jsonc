@@ -15,24 +15,31 @@
   // To disable a specific server: "lsp": { "pyright": { "disabled": true } }
 
   // ── MCP Servers ───────────────────────────────────────────────────────────
-  // postgres is the only MCP server. It runs as a persistent SSE server and
-  // must be started separately before using the db agent for live analysis.
+  // postgres is the only MCP server. It is spawned on demand by OpenCode as
+  // a local stdio process — no manual start/stop required.
   // Disabled globally via "tools" below and re-enabled only on the db agent.
+  //
+  // Connection credentials are set per-project in a local opencode.json:
+  //   { "mcp": { "postgres": { "environment": { "DATABASE_URI": "postgresql://..." } } } }
+  // That file is git-ignored and never committed.
   "mcp": {
-    // postgres (pg-mcp-server) ─────────────────────────────────────────────
-    // Feature-rich PostgreSQL MCP: pg_query, pg_explain, schema discovery,
-    // table stats, index info. Runs as a persistent SSE server — must be
-    // started separately before using the db agent for live analysis.
+    // postgres (crystaldba/postgres-mcp) ───────────────────────────────────
+    // Full-featured PostgreSQL MCP: schema discovery, SQL execution,
+    // EXPLAIN analysis, slow query detection, index recommendations,
+    // and DB health checks.
     //
-    // Start: PG_MCP_DATABASE_URL=<conn_str> uvx stuzero/pg-mcp-server
-    //   or:  make pg_mcp_start  (in DB projects with the Makefile target)
+    // Spawned automatically by OpenCode when the db agent is active.
+    // Reads DATABASE_URI from the project-level opencode.json (git-ignored).
     //
-    // Server listens at: http://localhost:8000/sse (default port)
-    // Disabled globally — enabled only on the db agent.
+    // --access-mode=unrestricted allows EXPLAIN ANALYZE and advisory queries
+    // in addition to read-only SELECT statements.
     "postgres": {
-      "type": "remote",
-      "url": "http://localhost:8000/sse",
+      "type": "local",
+      "command": ["uvx", "postgres-mcp", "--access-mode=unrestricted"],
       "enabled": true,
+      "environment": {
+        "DATABASE_URI": "{env:DATABASE_URI}",
+      },
     },
   },
 

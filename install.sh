@@ -10,9 +10,12 @@
 #   4. Makes scripts/ruff-format.sh executable.
 #   5. Verifies the shell-strategy instructions file is present.
 #
-# Plugins (@tarquinen/opencode-dcp, opencode-handoff) are loaded
-# automatically by OpenCode at startup from the "plugin" array in opencode.jsonc
-# — no manual npm install is required here.
+# Plugins (@tarquinen/opencode-dcp, opencode-handoff) are loaded automatically
+# by OpenCode at startup from the "plugin" array in opencode.jsonc — no manual
+# npm install is required here.
+#
+# The postgres MCP server (crystaldba/postgres-mcp) is spawned on demand by
+# OpenCode via uvx — no manual start/stop required.
 
 set -euo pipefail
 
@@ -256,24 +259,21 @@ else
 	info "This file should be in the repository. Try: git pull"
 fi
 
-# ── 5. pg-mcp-server ──────────────────────────────────────────────────────────
+# ── 5. postgres-mcp ───────────────────────────────────────────────────────────
 
-section "Checking pg-mcp-server (PostgreSQL MCP)..."
+section "Checking postgres-mcp (PostgreSQL MCP)..."
 
-# pg-mcp-server is a Python MCP server for live PostgreSQL analysis.
-# It runs as a persistent SSE server — start it before using the db agent.
-# It uses uvx (bundled with uv) and requires no separate install.
+# crystaldba/postgres-mcp is a Python MCP server for live PostgreSQL analysis.
+# It is spawned on demand by OpenCode as a local stdio process — no manual
+# start/stop required. It uses uvx (bundled with uv) and requires no separate install.
 if has uv; then
-	ok "pg-mcp-server available via uvx (bundled with uv)"
-	dim "  Start manually:"
-	dim "    PG_MCP_DATABASE_URL=postgresql://user:pass@localhost:5433/dbname \\"
-	dim "      uvx stuzero/pg-mcp-server"
-	dim "  Or in a project with the Makefile target: make pg_mcp_start"
-	dim "  OpenCode db agent expects it at: http://localhost:8000/sse"
-	dim "  Server runs in read-only mode by default — safe during dev sessions."
+	ok "postgres-mcp available via uvx (bundled with uv)"
+	dim "  OpenCode spawns it automatically when the db agent is active."
+	dim "  Set DATABASE_URI in the project-level opencode.json (git-ignored):"
+	dim "    { \"mcp\": { \"postgres\": { \"environment\": { \"DATABASE_URI\": \"postgresql://...\" } } } }"
 else
-	warn "uv not installed — pg-mcp-server requires uv"
-	info "Install uv first, then pg-mcp-server will be available automatically"
+	warn "uv not installed — postgres-mcp requires uv"
+	info "Install uv first, then postgres-mcp will be available automatically"
 fi
 
 # ── 6. Summary ────────────────────────────────────────────────────────────────
@@ -305,11 +305,10 @@ dim "  @tarquinen/opencode-dcp  — context pruning"
 dim "  opencode-handoff         — session handoff prompts"
 
 echo ""
-echo -e "  ${BOLD}PostgreSQL MCP (pg-mcp-server):${RESET}"
-dim "  Start:  PG_MCP_DATABASE_URL=<conn_str> uvx stuzero/pg-mcp-server"
-dim "  Or:     make pg_mcp_start  (in projects with that Makefile target)"
-dim "  Stop:   make pg_mcp_stop  /  pkill -f pg-mcp-server"
-dim "  The db agent connects to: http://localhost:8000/sse"
+echo -e "  ${BOLD}PostgreSQL MCP (postgres-mcp):${RESET}"
+dim "  Spawned automatically by OpenCode when the db agent is active."
+dim "  Set DATABASE_URI in the project-level opencode.json (git-ignored):"
+dim "    { \"mcp\": { \"postgres\": { \"environment\": { \"DATABASE_URI\": \"postgresql://...\" } } } }"
 dim "  See README.md for full usage instructions."
 
 echo ""

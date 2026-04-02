@@ -3,6 +3,7 @@
 This document defines the coding standards, tooling configuration, and architectural patterns for all Python projects. It is the authoritative reference for any AI agent or developer starting or contributing to a Python project in this workspace.
 
 **How to use this document:**
+
 - All tooling, configuration values, and code patterns in this document are **non-negotiable defaults**. Apply them without asking.
 - Sections marked with a **"Ask the user"** note contain decisions that depend on project specifics. Pause and ask before proceeding in those cases.
 - When in doubt about a domain decision not covered here, use your best judgment and document what you chose and why in a `CLAUDE.md` at the project root.
@@ -47,15 +48,15 @@ Everything else in this document applies unconditionally.
 
 These tools are mandatory for every project. No alternatives.
 
-| Concern | Tool | Notes |
-|---|---|---|
-| Python version | **3.14** | Pin with `.python-version` file containing `3.14` |
-| Package manager | **uv** | Only tool for installing, locking, and running. No pip, poetry, or pipenv. |
-| Linter | **ruff** | Full rule set, preview mode, auto-fix enabled |
-| Formatter | **ruff format** | Replaces black and isort |
-| Security scanner | **bandit** | Strict profile, no suppressions |
-| Pre-commit | **pre-commit** | All hooks must pass before every commit |
-| Debug printing | **icecream** | Use `ic()` instead of `print()` during development |
+| Concern          | Tool            | Notes                                                                      |
+| ---------------- | --------------- | -------------------------------------------------------------------------- |
+| Python version   | **3.14**        | Pin with `.python-version` file containing `3.14`                          |
+| Package manager  | **uv**          | Only tool for installing, locking, and running. No pip, poetry, or pipenv. |
+| Linter           | **ruff**        | Full rule set, preview mode, auto-fix enabled                              |
+| Formatter        | **ruff format** | Replaces black and isort                                                   |
+| Security scanner | **bandit**      | Strict profile, no suppressions                                            |
+| Pre-commit       | **pre-commit**  | All hooks must pass before every commit                                    |
+| Debug printing   | **icecream**    | Use `ic()` instead of `print()` during development                         |
 
 ### uv Conventions
 
@@ -435,14 +436,14 @@ def create_record(*, name: str, active: bool = True) -> Record:
 
 These are hard limits — if you hit them, the code needs to be refactored, not suppressed:
 
-| Limit | Value |
-|---|---|
-| Cyclomatic complexity (McCabe) | 4 |
-| Function arguments (total) | 4 |
-| Function arguments (positional) | 3 |
-| Boolean expressions in one condition | 3 |
-| Branches per function | 5 |
-| Nesting levels | 3 |
+| Limit                                | Value |
+| ------------------------------------ | ----- |
+| Cyclomatic complexity (McCabe)       | 4     |
+| Function arguments (total)           | 4     |
+| Function arguments (positional)      | 3     |
+| Boolean expressions in one condition | 3     |
+| Branches per function                | 5     |
+| Nesting levels                       | 3     |
 
 ### Other Rules
 
@@ -577,6 +578,7 @@ app = create_app()
 ```
 
 Key decisions, all non-negotiable:
+
 - No `default_response_class` — FastAPI 0.130+ uses Pydantic's Rust-based serializer by default, making `ORJSONResponse` unnecessary and deprecated
 - `debug=True` only in `LOCAL` environment
 - Routers, middleware, and startup tasks are set up in private helpers, not inline in `create_app()`
@@ -646,6 +648,7 @@ async def delete_item(*, db: AsyncDBSession, item_id: int, user: RequireAdmin) -
 ```
 
 Rules:
+
 - Always declare `response_model=` and `status_code=` on every endpoint decorator
 - All endpoint function parameters must be keyword-only (`*,`)
 - Apply auth dependencies at the endpoint level, not at the router level — different endpoints have different permission requirements
@@ -708,6 +711,7 @@ settings = Settings()
 ```
 
 Rules:
+
 - No `.env` path in code — pydantic-settings discovers it automatically
 - Use typed fields: `PostgresDsn`, `AnyHttpUrl`, `list[str]` — not plain `str` for structured values
 - Configure logging via `dictConfig()` at module import time in this file
@@ -773,6 +777,7 @@ class ServerError(AppBaseError):
 ```
 
 Rules:
+
 - All HTTP-mapped exceptions extend `AppBaseError(HTTPException)` — FastAPI's built-in handler picks them up automatically, no custom exception handler registration needed
 - Each subclass pins its own `status_code` and exposes only a `detail` parameter at the call site
 - Non-HTTP internal exceptions (domain errors, integration errors) extend plain `Exception`
@@ -863,6 +868,7 @@ class Item(BaseModel, table=True):
 ```
 
 Rules:
+
 - Every `table=True` model inherits from `BaseModel`
 - All datetimes use `sa_type=DateTime(timezone=True)` — never naive datetimes
 - JSON columns use `JSONB()` (PostgreSQL-specific, better indexing than JSON)
@@ -1038,6 +1044,7 @@ ruff_format.options = format REVISION_SCRIPT_FILENAME
 ```
 
 Rules:
+
 - DB URI is never in `alembic.ini` — always injected from `settings` in `env.py`
 - Offline mode is explicitly disabled
 - Migration file naming: `YYYYMMDDhhmm_<slug>` (e.g. `202501151030_add_items_table`)
@@ -1121,6 +1128,7 @@ class ItemResponseFull(ItemResponse):
 ```
 
 Standard schema set per resource:
+
 - `FooResponse` — all fields, used for single-resource GET and write responses
 - `FooCreate` — excludes `id`, `created_at`, `updated_at`, server-set FKs
 - `FooUpdate` — same exclusions as Create, all fields optional (`all_optionals=True`)
@@ -1245,6 +1253,7 @@ RequireAdmin = t.Annotated[User, Depends(require_admin)]
 ```
 
 Additional auth patterns from the reference implementations:
+
 - **API key auth** (service-to-service): use `fastapi.security.APIKeyHeader`, hash keys before storage, support per-key IP allowlists
 - **Per-tenant token auth** (webhooks): implement as a callable class with `__call__`, instantiate one per integration
 
@@ -1311,15 +1320,15 @@ test = [
 
 See the `[tool.pytest.ini_options]` block in [Section 3](#3-pyprojecttoml-reference). Key settings:
 
-| Setting | Value | Why |
-|---|---|---|
-| `asyncio_mode = "auto"` | All async test functions run automatically | No `@pytest.mark.asyncio` boilerplate |
-| `timeout = 3` | 3-second limit per test | Catches hanging tests early |
-| `-n=auto` | Parallel workers via xdist | Faster test runs |
-| `--dist=loadfile` | All tests in a file go to one worker | Prevents cross-worker DB conflicts |
-| `--disable-socket` | Block all real network traffic | Tests must not call external APIs |
-| `--allow-hosts=127.0.0.1,::1` | Only localhost traffic | LocalStack, test DB, etc. still work |
-| `fail_under=95` | Fail if coverage drops below 95% | Non-negotiable threshold |
+| Setting                       | Value                                      | Why                                   |
+| ----------------------------- | ------------------------------------------ | ------------------------------------- |
+| `asyncio_mode = "auto"`       | All async test functions run automatically | No `@pytest.mark.asyncio` boilerplate |
+| `timeout = 3`                 | 3-second limit per test                    | Catches hanging tests early           |
+| `-n=auto`                     | Parallel workers via xdist                 | Faster test runs                      |
+| `--dist=loadfile`             | All tests in a file go to one worker       | Prevents cross-worker DB conflicts    |
+| `--disable-socket`            | Block all real network traffic             | Tests must not call external APIs     |
+| `--allow-hosts=127.0.0.1,::1` | Only localhost traffic                     | LocalStack, test DB, etc. still work  |
+| `fail_under=95`               | Fail if coverage drops below 95%           | Non-negotiable threshold              |
 
 ### DB Fixture Pattern
 
@@ -1379,7 +1388,7 @@ Every project uses the same `.pre-commit-config.yaml`. The only project-specific
 
 ```yaml
 # .pre-commit-config.yaml
-exclude: '.git,.venv'
+exclude: ".git,.venv"
 default_stages: [pre-commit]
 default_install_hook_types:
   - pre-commit
@@ -1472,7 +1481,7 @@ name: PR Check
 on:
   pull_request:
     types: [opened, ready_for_review, synchronize]
-    branches: [main, dev, stage, prod]  # PROJECT-SPECIFIC
+    branches: [main, dev, stage, prod] # PROJECT-SPECIFIC
   workflow_dispatch:
 
 concurrency:
@@ -1522,11 +1531,11 @@ runs:
   steps:
     - uses: actions/setup-python@v5
       with:
-        python-version-file: pyproject.toml  # reads requires-python
+        python-version-file: pyproject.toml # reads requires-python
 
     - uses: astral-sh/setup-uv@v5
       with:
-        version: "x.x.x"                    # pin to current release: https://github.com/astral-sh/uv/releases
+        version: "x.x.x" # pin to current release: https://github.com/astral-sh/uv/releases
         enable-cache: true
         cache-dependency-glob: uv.lock
 
@@ -1635,6 +1644,7 @@ Podman reads `.containerignore` (preferred) and falls back to `.dockerignore`.
 .github
 .venv
 .env
+opencode.json
 tests/
 coverage/
 ruff.toml
@@ -1711,7 +1721,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: appdb   # PROJECT-SPECIFIC
+      POSTGRES_DB: appdb # PROJECT-SPECIFIC
     ports:
       - "5433:5432"
     volumes:
@@ -1743,7 +1753,7 @@ Globals:
     Runtime: python3.14
     Architectures: [x86_64]
     LoggingConfig:
-      LogFormat: JSON          # structured logging
+      LogFormat: JSON # structured logging
 
 Resources:
   MyFunction:
@@ -1751,10 +1761,10 @@ Resources:
     Properties:
       CodeUri: my_function/
       Handler: main.handler
-      MemorySize: 512          # PROJECT-SPECIFIC
-      Timeout: 30              # PROJECT-SPECIFIC
+      MemorySize: 512 # PROJECT-SPECIFIC
+      Timeout: 30 # PROJECT-SPECIFIC
       Metadata:
-        BuildMethod: python-uv  # uv-aware SAM build
+        BuildMethod: python-uv # uv-aware SAM build
 ```
 
 ```toml
@@ -1786,6 +1796,7 @@ CI deploy workflow: use OIDC for AWS authentication (`id-token: write` permissio
 The `.env` file contains secrets and is the sole responsibility of the human developer. It must never be opened, read, inspected, modified, or created by any agent under any circumstances.
 
 **When a new setting is needed, the correct workflow is:**
+
 1. Add the typed field to the `Settings` class (or `Config` dataclass for Lambda)
 2. Add the variable name with an empty or safe placeholder value to `.env.example`
 3. Tell the user what value needs to be set in their local `.env`
