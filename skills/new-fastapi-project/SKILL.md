@@ -396,6 +396,8 @@ local DB connection string for the `db` agent's PostgreSQL MCP server.
 {
   "mcp": {
     "postgres": {
+      "type": "local",
+      "command": ["uvx", "postgres-mcp", "--access-mode=unrestricted"],
       "environment": {
         "DATABASE_URI": "postgresql://postgres:postgres@localhost:5433/<project-name>"
       }
@@ -405,6 +407,10 @@ local DB connection string for the `db` agent's PostgreSQL MCP server.
 ```
 
 `# PROJECT-SPECIFIC: adjust user, password, port, and DB name to match compose.yml`
+
+**Important:** `type` and `command` are required by the OpenCode config schema — a
+partial `environment`-only entry will fail validation. The full server definition must
+be repeated in the project file.
 
 The `db` agent reads `DATABASE_URI` from this file to connect to the local database.
 OpenCode merges this on top of the global `~/.config/opencode/opencode.jsonc` — no

@@ -19,9 +19,18 @@
   // a local stdio process — no manual start/stop required.
   // Disabled globally via "tools" below and re-enabled only on the db agent.
   //
-  // Connection credentials are set per-project in a local opencode.json:
-  //   { "mcp": { "postgres": { "environment": { "DATABASE_URI": "postgresql://..." } } } }
-  // That file is git-ignored and never committed.
+  // Connection credentials are set per-project in a local opencode.json (git-ignored):
+  //   {
+  //     "mcp": {
+  //       "postgres": {
+  //         "type": "local",
+  //         "command": ["uvx", "postgres-mcp", "--access-mode=unrestricted"],
+  //         "environment": { "DATABASE_URI": "postgresql://..." }
+  //       }
+  //     }
+  //   }
+  // NOTE: type + command are required by the schema — a partial environment-only
+  // override is not valid. The full server definition must be repeated.
   "mcp": {
     // postgres (crystaldba/postgres-mcp) ───────────────────────────────────
     // Full-featured PostgreSQL MCP: schema discovery, SQL execution,

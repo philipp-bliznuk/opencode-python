@@ -25,9 +25,12 @@ wrong `DATABASE_URI`. Tell the user to check it:
 
 ```json
 // opencode.json at the project root (git-ignored, never committed)
+// NOTE: type + command are required — a partial environment-only entry fails validation
 {
   "mcp": {
     "postgres": {
+      "type": "local",
+      "command": ["uvx", "postgres-mcp", "--access-mode=unrestricted"],
       "environment": {
         "DATABASE_URI": "postgresql://postgres:postgres@localhost:5433/<dbname>"
       }

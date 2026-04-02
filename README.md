@@ -179,6 +179,8 @@ with the local connection string:
 {
   "mcp": {
     "postgres": {
+      "type": "local",
+      "command": ["uvx", "postgres-mcp", "--access-mode=unrestricted"],
       "environment": {
         "DATABASE_URI": "postgresql://postgres:postgres@localhost:5433/<dbname>"
       }
@@ -186,6 +188,10 @@ with the local connection string:
   }
 }
 ```
+
+> **Note:** `type` and `command` are required by the OpenCode config schema. A
+> partial `environment`-only entry will fail validation with `Invalid input mcp.postgres`.
+> The full server definition must be repeated in the project file.
 
 OpenCode merges this on top of the global config. The `db` agent picks up `DATABASE_URI`
 automatically and can:
