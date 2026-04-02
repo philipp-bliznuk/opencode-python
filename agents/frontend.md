@@ -8,8 +8,6 @@ permission:
   edit: allow
   bash: ask
   webfetch: allow
-tools:
-  sequential-thinking_*: true
 ---
 
 You are the primary frontend agent for full-stack Python web applications. You have full write
@@ -93,6 +91,7 @@ bunx --bun @biomejs/biome check .           # check only (CI)
 ```
 
 `biome.json` at `frontend/` root, configured with:
+
 - `indentWidth: 2`, `lineWidth: 88` (matches Python's ruff line length)
 - `quoteStyle: "single"`
 - `organizeImports.enabled: true`
@@ -148,19 +147,19 @@ function getUser(id: UserId): Promise<User> { ... }
 Over bare try/catch, which loses type information on the error:
 
 ```typescript
-type Result<T, E = string> =
-  | { ok: true;  value: T }
-  | { ok: false; error: E }
+type Result<T, E = string> = { ok: true; value: T } | { ok: false; error: E };
 
 async function fetchUser(id: UserId): Promise<Result<User>> {
-  const resp = await fetch(`/api/users/${id}`)
-  if (!resp.ok) return { ok: false, error: `HTTP ${resp.status}` }
-  return { ok: true, value: await resp.json() }
+  const resp = await fetch(`/api/users/${id}`);
+  if (!resp.ok) return { ok: false, error: `HTTP ${resp.status}` };
+  return { ok: true, value: await resp.json() };
 }
 
-const result = await fetchUser(userId)
-if (!result.ok) { /* handle error */ return }
-console.log(result.value.name)  // TypeScript knows value is User here
+const result = await fetchUser(userId);
+if (!result.ok) {
+  /* handle error */ return;
+}
+console.log(result.value.name); // TypeScript knows value is User here
 ```
 
 ### `satisfies` for config validation
@@ -169,9 +168,9 @@ Get type checking without losing the literal type for autocomplete:
 
 ```typescript
 const ROUTES = {
-  home:  '/',
-  users: '/users/:id',
-} satisfies Record<string, string>
+  home: "/",
+  users: "/users/:id",
+} satisfies Record<string, string>;
 
 // ROUTES.home is typed as '/'  (literal), not string
 ```
@@ -181,8 +180,8 @@ const ROUTES = {
 Mirrors Python's `if TYPE_CHECKING:` discipline. Required by Biome:
 
 ```typescript
-import type { User } from '@/types/api'   // correct — erased at compile time
-import       { User } from '@/types/api'  // wrong — may pull in runtime code
+import type { User } from "@/types/api"; // correct — erased at compile time
+import { User } from "@/types/api"; // wrong — may pull in runtime code
 ```
 
 ### OpenAPI type generation — single source of truth
@@ -197,6 +196,7 @@ bunx openapi-typescript http://localhost:8000/openapi.json -o src/types/api.ts
 ```
 
 Add to the project `Makefile`:
+
 ```makefile
 fe_types: ## Generate TypeScript types from FastAPI OpenAPI schema
 	cd frontend && bunx openapi-typescript http://localhost:8000/openapi.json \
@@ -237,12 +237,13 @@ work without any import (bun injects them as globals).
 // No imports needed for basic tests
 describe("add", () => {
   it("adds two numbers", () => {
-    expect(1 + 1).toBe(2)
-  })
-})
+    expect(1 + 1).toBe(2);
+  });
+});
 ```
 
 **Switch to Vitest** when you need:
+
 - DOM testing (`jsdom` or `happy-dom` environment)
 - React Testing Library or Vue Test Utils
 - Snapshot testing
@@ -289,12 +290,12 @@ frontend:
   working_dir: /frontend
   volumes:
     - ./frontend:/frontend:cached
-    - /frontend/node_modules    # anonymous volume — prevents host dir override
+    - /frontend/node_modules # anonymous volume — prevents host dir override
   ports:
     - "5173:5173"
   command: sh -c "bun install --frozen-lockfile && bun run dev"
   depends_on:
-    - backend                   # PROJECT-SPECIFIC: match your backend service name
+    - backend # PROJECT-SPECIFIC: match your backend service name
 ```
 
 The Vite dev server proxies `/api/*` → `http://backend:8000` (Podman Compose service hostname).

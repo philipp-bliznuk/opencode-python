@@ -5,10 +5,7 @@
   // AGENTS.md loads Python project standards into every session.
   // shell_strategy.md teaches agents to use non-interactive shell flags —
   // uv-aware Python commands, bun-first frontend commands, no bare python/pip.
-  "instructions": [
-    "./AGENTS.md",
-    "./plugins/shell-strategy/shell_strategy.md"
-  ],
+  "instructions": ["./AGENTS.md", "./plugins/shell-strategy/shell_strategy.md"],
 
   // ── LSP ───────────────────────────────────────────────────────────────────
   // All LSP servers are auto-detected — no explicit configuration needed.
@@ -18,52 +15,10 @@
   // To disable a specific server: "lsp": { "pyright": { "disabled": true } }
 
   // ── MCP Servers ───────────────────────────────────────────────────────────
-  // All servers run as local child processes — no external service calls.
-  // Each is disabled globally via "tools" below and re-enabled only in the
-  // agent .md files that actually need them, avoiding context bloat elsewhere.
+  // postgres is the only MCP server. It runs as a persistent SSE server and
+  // must be started separately before using the db agent for live analysis.
+  // Disabled globally via "tools" below and re-enabled only on the db agent.
   "mcp": {
-
-    // sequential-thinking ────────────────────────────────────────────────────
-    // Pure local reasoning scaffold — no network calls, no credentials.
-    // Forces structured step-by-step decomposition for complex problems.
-    // Enabled on: plan, refactor, debug, frontend agents.
-    "sequential-thinking": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
-      "enabled": true
-    },
-
-    // aws-documentation ──────────────────────────────────────────────────────
-    // Searches and fetches official AWS docs locally via uvx (Python).
-    // No credentials required — read-only documentation access only.
-    // Enabled on: research, ci, debug agents.
-    "aws-documentation": {
-      "type": "local",
-      "command": ["uvx", "awslabs.aws-documentation-mcp-server@latest"],
-      "enabled": true,
-      "environment": {
-        "FASTMCP_LOG_LEVEL": "ERROR",
-        "AWS_DOCUMENTATION_PARTITION": "aws"
-      }
-    },
-
-    // aws-serverless ─────────────────────────────────────────────────────────
-    // Wraps SAM CLI with structured MCP tools: build, validate, deploy, logs.
-    // Requires local AWS credentials + SAM CLI installed (brew install aws-sam-cli).
-    // Uses AWS_PROFILE / AWS_REGION from your environment.
-    // Add "ALLOW_WRITE": "true" to the environment block to enable sam deploy.
-    // Enabled on: ci agent.
-    "aws-serverless": {
-      "type": "local",
-      "command": ["uvx", "awslabs.aws-serverless-mcp-server@latest"],
-      "enabled": true,
-      "environment": {
-        "FASTMCP_LOG_LEVEL": "ERROR",
-        "AWS_PROFILE": "{env:AWS_PROFILE}",
-        "AWS_REGION": "{env:AWS_REGION}"
-      }
-    },
-
     // postgres (pg-mcp-server) ─────────────────────────────────────────────
     // Feature-rich PostgreSQL MCP: pg_query, pg_explain, schema discovery,
     // table stats, index info. Runs as a persistent SSE server — must be
@@ -77,8 +32,8 @@
     "postgres": {
       "type": "remote",
       "url": "http://localhost:8000/sse",
-      "enabled": true
-    }
+      "enabled": true,
+    },
   },
 
   // ── Formatters ────────────────────────────────────────────────────────────
@@ -88,16 +43,18 @@
   // This ensures every Python file OpenCode touches comes out identical to
   // what conform produces on save in Neovim.
   "formatter": {
-
     // Disable built-in Python formatters to prevent conflicts with the pipeline
     "ruff": { "disabled": true },
-    "uv":   { "disabled": true },
+    "uv": { "disabled": true },
 
     // Python: three-step pipeline (ruff_fix + ruff_format + ruff_organize_imports)
     // Path uses {env:HOME} so it resolves correctly once deployed to ~/.config/opencode/
     "ruff-pipeline": {
-      "command": ["{env:HOME}/.config/opencode/scripts/ruff-format.sh", "$FILE"],
-      "extensions": [".py", ".pyi"]
+      "command": [
+        "{env:HOME}/.config/opencode/scripts/ruff-format.sh",
+        "$FILE",
+      ],
+      "extensions": [".py", ".pyi"],
     },
 
     // Lua: stylua with settings matching dotfiles/nvim stylua.toml
@@ -105,12 +62,15 @@
     "stylua": {
       "command": [
         "stylua",
-        "--indent-type", "Spaces",
-        "--indent-width", "2",
-        "--column-width", "120",
-        "$FILE"
+        "--indent-type",
+        "Spaces",
+        "--indent-width",
+        "2",
+        "--column-width",
+        "120",
+        "$FILE",
       ],
-      "extensions": [".lua"]
+      "extensions": [".lua"],
     },
 
     // Markdown: prettier via npx — no package.json required.
@@ -118,11 +78,15 @@
     // (important for AGENTS.md, READMEs, and exported session markdown).
     "prettier-md": {
       "command": [
-        "npx", "--yes", "prettier",
-        "--prose-wrap", "preserve",
-        "--write", "$FILE"
+        "npx",
+        "--yes",
+        "prettier",
+        "--prose-wrap",
+        "preserve",
+        "--write",
+        "$FILE",
       ],
-      "extensions": [".md", ".mdx"]
+      "extensions": [".md", ".mdx"],
     },
 
     // JS/TS/JSX/TSX/CSS/HTML — prettier fallback for frontend files.
@@ -130,21 +94,21 @@
     // (OpenCode's built-in biome detection requires no config here).
     "prettier-web": {
       "command": ["npx", "--yes", "prettier", "--write", "$FILE"],
-      "extensions": [".js", ".jsx", ".ts", ".tsx", ".css", ".html"]
+      "extensions": [".js", ".jsx", ".ts", ".tsx", ".css", ".html"],
     },
 
     // JSON/YAML — single formatter for all config and data files.
     // biome auto-overrides .json/.yaml per-project when biome.json is present.
     "prettier-config": {
       "command": ["npx", "--yes", "prettier", "--write", "$FILE"],
-      "extensions": [".json", ".jsonc", ".yaml", ".yml"]
+      "extensions": [".json", ".jsonc", ".yaml", ".yml"],
     },
 
     // Shell scripts — shfmt with standard formatting.
     "shfmt": {
       "command": ["shfmt", "-w", "$FILE"],
-      "extensions": [".sh", ".bash"]
-    }
+      "extensions": [".sh", ".bash"],
+    },
   },
 
   // ── Watcher ───────────────────────────────────────────────────────────────
@@ -167,8 +131,8 @@
       "dist/**",
       "build/**",
       "frontend/node_modules/**",
-      "frontend/dist/**"
-    ]
+      "frontend/dist/**",
+    ],
   },
 
   // ── Autoupdate ────────────────────────────────────────────────────────────
@@ -181,29 +145,13 @@
   // Loaded automatically by OpenCode at startup — no manual install needed.
   // Requires node/npx to be available (verified by install.sh).
   "plugin": [
-    "@tarquinen/opencode-dcp",  // prunes stale tool outputs from context
-    "opencode-handoff"           // session handoff prompts near context limit
+    "@tarquinen/opencode-dcp", // prunes stale tool outputs from context
+    "opencode-handoff", // session handoff prompts near context limit
   ],
 
   // ── Global tool overrides ─────────────────────────────────────────────────
-  // Disable all MCP server tools globally. Each is selectively re-enabled in
-  // the relevant agent .md file using the agent-level "tools" configuration.
-  // MCP tool names follow the pattern: <server-name>_<tool-name>
+  // Disable postgres MCP tools globally. Re-enabled only on the db agent
+  // via the agent-level "tools" configuration in agents/db.md.
   "tools": {
-    "sequential-thinking_*": false,
-    "aws-documentation_*": false,
-    "aws-serverless_*": false,
     "postgres_*": false
   }
-
-  // ── Environment flags (set before launching opencode) ─────────────────────
-  //
-  // Web search via Exa AI — no API key needed:
-  //   OPENCODE_ENABLE_EXA=1 opencode
-  //
-  // Experimental LSP tool (go-to-definition, find-references, call hierarchy):
-  //   OPENCODE_EXPERIMENTAL_LSP_TOOL=true opencode
-  //
-  // Custom tools in tools/ require Bun (https://bun.sh):
-  //   brew install bun
-}
