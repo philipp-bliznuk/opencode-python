@@ -160,5 +160,6 @@
   // Disable postgres MCP tools globally. Re-enabled only on the db agent
   // via the agent-level "tools" configuration in agents/db.md.
   "tools": {
-    "postgres_*": false
-  }
+    "postgres_*": false,
+  },
+}
