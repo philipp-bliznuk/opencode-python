@@ -46,6 +46,7 @@ Apply these on every file you touch, not just the files you create:
 - **Docstrings**: Google style. Required on all public functions, classes, and methods. Not required on `__init__`, magic methods, modules, or packages.
 - **Complexity**: McCabe ≤ 4, max 4 args (max 3 positional), max 5 branches, max 3 nesting levels. If you hit a limit, refactor — do not suppress the rule.
 - **No commented-out code**: Delete dead code. Use a TODO if something needs revisiting.
+- **No file-level header comments**: Never add `# This module...`, `# File:`, `# Purpose:`, or any floating prose comment at the top of a Python file. The path and the code are self-documenting. If context is genuinely needed, it belongs in a docstring on a class or function — not a free-floating comment.
 - **No `print()`**: Use `ic()` from `icecream` during development, `logging` in production.
 - **All function arguments keyword-only**: Use `*,` separator unless there is a strong positional reason.
 - **Keyword-only endpoint functions**: Every FastAPI endpoint must use `*,` for all parameters.

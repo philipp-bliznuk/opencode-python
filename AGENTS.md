@@ -447,6 +447,7 @@ These are hard limits — if you hit them, the code needs to be refactored, not 
 ### Other Rules
 
 - No commented-out code (`ERA` — eradicate). Delete it or use a TODO.
+- No file-level header comments. Never add `# This module...`, `# File:`, `# Purpose:`, or any explanatory prose comment at the top of a Python file. The file path and the code itself are self-documenting. Module docstrings are not required (`D100` ignored). If context is needed, put it in a docstring on the relevant class or function.
 - No `print()` in production code. Use `ic()` from `icecream` during development; use `logging` in production.
 - No `pdb`, `breakpoint()`, or debugger statements in committed code.
 - No bare `except:` — always catch specific exceptions.

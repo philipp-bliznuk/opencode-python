@@ -81,6 +81,7 @@ Work through these categories for every review:
 
 ### Code quality
 - [ ] No commented-out code
+- [ ] No file-level header comments (`# This module...`, `# File:`, `# Purpose:` etc.)
 - [ ] No `print()` statements (use `ic()` or `logging`)
 - [ ] No bare `except:` clauses
 - [ ] No boolean trap arguments — prefer enums or separate functions
