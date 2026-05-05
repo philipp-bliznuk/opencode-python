@@ -1,29 +1,26 @@
 # opencode-python
 
-A highly opinionated [OpenCode](https://opencode.ai) configuration for Python backend
-development. This is not a general-purpose AI assistant setup — it is a precise,
-curated environment built around a specific stack, specific patterns, and non-negotiable
-quality standards.
+Minimal, opinionated [OpenCode](https://opencode.ai) configuration for Python backend
+development. Conservative by design — no custom tools to maintain, no npm build step,
+no frontend scaffolding, no plugin proliferation. What remains is precise and
+non-negotiable.
 
 ## Philosophy
 
-Most AI coding setups trade precision for generality. This one does the opposite.
+Most AI coding setups accumulate features. This one removes them.
 
-Every agent in this configuration operates within a single authoritative ruleset
-(`AGENTS.md`) that defines the exact tools, patterns, and constraints used across all
-projects. There is no "let the AI decide" for tooling choices, code style, project
-structure, or architectural patterns — those decisions have already been made, documented,
-and encoded. Agents enforce them unconditionally.
+Fewer moving parts means fewer failure modes. No custom TypeScript tools, no shell-strategy
+plugin. Installation is a symlink. That's it.
 
-The result is that AI assistance becomes genuinely useful for the hard parts — domain
-logic, architecture decisions, debugging — rather than wasting conversation on
-"which formatter should I use?" or "how should I structure this FastAPI router?"
+What stays is strict: a single authoritative ruleset (`AGENTS.md`) that defines exact
+tools, patterns, and constraints across all projects. Agents enforce them unconditionally.
+The goal is that AI assistance becomes useful for the hard parts — domain logic, architecture
+decisions, debugging — not for figuring out which formatter to use.
 
-**This configuration is opinionated about:**
+**Non-negotiable choices:**
 
-- **Toolchain**: `uv` for package management, `ruff` for linting and formatting (with a
-  custom three-step pipeline), `bandit` for security, `pre-commit` for enforcement — no
-  alternatives, no overrides
+- **Toolchain**: `uv` for package management, `ruff` for linting and formatting, `bandit`
+  for security, `pre-commit` for enforcement — no alternatives, no overrides
 - **Code quality**: McCabe complexity ≤ 4, max 4 function arguments, strict typing with
   `X | None` over `Optional`, absolute imports only, Google docstrings — all enforced
   at the agent level before any code is written
@@ -33,147 +30,113 @@ logic, architecture decisions, debugging — rather than wasting conversation on
   patterns and apply them without being asked
 - **Podman**: multi-stage Containerfiles, layer ordering as a caching discipline, non-root
   execution, uv-managed venv, `python:3.x-slim` only
-- **Performance**: async-first with explicit rules against blocking I/O, N+1
-  awareness, algorithmic complexity consciousness — as a passive quality signal,
-  never a blocker
 - **Security**: bandit strict profile, `allow_skipping = false` (no `# nosec`),
   token hashing, least-privilege IAM, OWASP Top 10 awareness built into every review
 
 **Where agents ask rather than assume:**
 
-- Deployment target (FastAPI / Lambda / full-stack)
+- Deployment target
 - Authentication strategy and role model
 - Database choice and schema design
 - Testing scope and infrastructure
 
-Everything else is handled by the standards, and the goal is to keep it that way.
+Everything else is handled by the standards.
 
 ## Stack
-
-This configuration is built around a specific primary stack and knows it deeply:
 
 | Layer                     | Technology                                                     |
 | ------------------------- | -------------------------------------------------------------- |
 | **Language**              | Python 3.14                                                    |
 | **Package manager**       | uv (workspaces, lockfiles, venv)                               |
 | **Web framework**         | FastAPI + pydantic-settings                                    |
-| **ORM / DB**              | SQLModel + asyncpg + PostgreSQL 17                             |
+| **ORM / DB**              | SQLModel + asyncpg + PostgreSQL 17 _(default; agents ask)_     |
 | **Migrations**            | Alembic (async, with `alembic-postgresql-enum`)                |
 | **Auth**                  | JWT-based (provider-agnostic pattern)                          |
 | **Testing**               | pytest + asyncio + xdist + pytest-socket (95% branch coverage) |
 | **Linting**               | ruff (46 rule sets, preview mode, unsafe fixes)                |
 | **Security**              | bandit (strict profile, zero suppressions)                     |
 | **Container**             | Podman multi-stage, gunicorn + UvicornWorker                   |
-| **Serverless**            | AWS SAM + python-uv build method                               |
-| **Frontend** (occasional) | bun + Vite + Biome + TypeScript strict                         |
-| **CI/CD**                 | GitHub Actions + OIDC + composite setup action                 |
-
-Secondary patterns that are also well-understood: AWS Lambda, SAM templates, OIDC
-deployments, and bun-first full-stack apps where FastAPI serves the built frontend.
 
 ## What's Inside
 
 ```
 opencode-config/
 ├── AGENTS.md              # Global Python coding standards — loaded into every session
-├── opencode.jsonc         # Runtime config: LSP, MCP servers, formatters, plugins, watcher
-├── tui.jsonc              # TUI settings: catppuccin-mocha theme, scroll acceleration
-├── agents/                # 13 specialised agents (6 primary, 7 subagents)
-├── skills/                # 7 on-demand procedural playbooks
-├── tools/                 # 3 custom TypeScript tools
-├── plugins/
-│   └── shell-strategy/    # Non-interactive shell instructions (uv + bun aware)
-└── scripts/
-    └── ruff-format.sh     # Three-step Python formatter pipeline
+├── opencode.jsonc         # Runtime config: providers, formatters, watcher, plugins
+├── dcp.jsonc              # Context pruning config (for @tarquinen/opencode-dcp)
+├── tui.jsonc              # TUI settings: opencode theme, scroll acceleration
+├── agents/                # 7 subagents
+├── skills/                # 8 on-demand playbooks
+└── install.sh
 ```
 
 ---
 
 ## Agents
 
-### Primary Agents
-
-Switch between primary agents with `Tab` in the TUI.
-
-| Agent      | Model             | Color       | Purpose                                                                                                                                              |
-| ---------- | ----------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `build`    | claude-sonnet-4-6 | Green       | Full implementation. Enforces `AGENTS.md` on every write. Proactively invokes subagents after completing work.                                       |
-| `plan`     | claude-sonnet-4-6 | Blue        | Read-only analysis. Produces structured plans with file paths and compliance notes. Never writes code.                                               |
-| `refactor` | claude-sonnet-4-6 | Amber       | Reduces complexity, improves naming, enforces limits. Never changes behaviour. Show-before-apply workflow.                                           |
-| `git`      | claude-haiku-4-5  | Red         | Git specialist. Conventional commits, branch management, PR descriptions. All git commands require approval.                                         |
-| `debug`    | claude-sonnet-4-6 | Deep orange | Diagnoses bugs and traces failure chains. Full read + bash access for diagnostics. Never edits files.                                                |
-| `frontend` | claude-sonnet-4-6 | Cyan        | Bun-first frontend specialist. Asks about framework/stack upfront. Knows the `backend/`+`frontend/` split, Vite proxy, and multi-stage Podman build. |
-
-### Subagents
-
-Invoke subagents via `@name` in a prompt, or they are triggered automatically by primary agents.
+All agents are subagents. Invoke via `@name` in any prompt, or agents chain to each
+other automatically after completing work.
 
 | Agent         | Model             | Purpose                                                                                                   |
 | ------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `code-review` | claude-sonnet-4-6 | Reviews against `AGENTS.md`: Blocker / Suggestion / Nitpick tiers.                                        |
-| `security`    | claude-sonnet-4-6 | OWASP Top 10, auth flaws, secrets exposure, bandit findings. Critical→Info severity tiers.                |
-| `tests`       | claude-sonnet-4-6 | Generates pytest suites. Reads `conftest.py` before inventing fixtures. 95% coverage target.              |
-| `docs`        | claude-haiku-4-5  | Google-style docstrings, README sections, `CLAUDE.md` files.                                              |
+| `audit`       | claude-sonnet-4-6 | Full quality audit: complexity, coverage, mutation testing. Delegates findings to other agents.           |
+| `code-review` | claude-sonnet-4-6 | Read-only review against `AGENTS.md`: Blocker / Suggestion / Nitpick tiers.                              |
 | `db`          | claude-sonnet-4-6 | SQLModel models, Alembic migrations, query analysis. Catches N+1, unnamed constraints, unsafe migrations. |
-| `ci`          | claude-haiku-4-5  | GitHub Actions, Containerfiles, Podman Compose, SAM templates, Makefiles.                                 |
-| `research`    | claude-haiku-4-5  | Fetches and synthesises external docs, RFCs, PEPs, library changelogs. Never writes to project files.     |
+| `debug`       | claude-sonnet-4-6 | Root cause diagnosis, structured handoff. Full read + bash access. Never edits files.                    |
+| `refactor`    | claude-sonnet-4-6 | Reduces complexity, improves naming, enforces limits. Never changes behaviour.                            |
+| `security`    | claude-sonnet-4-6 | OWASP Top 10, auth flaws, secrets exposure, bandit findings. Critical→Info severity tiers.                |
+| `tests`       | claude-sonnet-4-6 | Generates pytest suites. Reads `conftest.py` before inventing fixtures. 95% coverage target.             |
 
-### Automatic subagent invocations (by `build`)
+### Automatic chaining
 
-| Situation                                    | Subagent called |
-| -------------------------------------------- | --------------- |
-| After completing a feature or fix            | `@code-review`  |
-| Touching auth, tokens, or cryptography       | `@security`     |
-| New module or function without test coverage | `@tests`        |
-| Creating or modifying a SQLModel model       | `@db`           |
+Agents chain without user prompts between steps:
+
+| Trigger                                      | Chain                                                    |
+| -------------------------------------------- | -------------------------------------------------------- |
+| Feature or fix complete                      | `@code-review` → `@security` (if auth touched)          |
+| Bug reported                                 | `@debug` → primary agent fixes → `@tests` → `@code-review` |
+| New SQLModel model                           | `@db` → alembic-migration skill → `@tests`               |
+| Audit requested                              | `@audit` → `@db` + `@refactor` + `@tests` + `@security` per findings |
 
 ---
 
 ## Skills
 
-Skills are on-demand playbooks loaded by agents when the situation matches. They are not always in context — agents load them only when needed.
+On-demand playbooks loaded by agents when the situation matches. Not always in context.
 
-| Skill                  | Loaded by            | Trigger                                                             |
-| ---------------------- | -------------------- | ------------------------------------------------------------------- |
-| `new-fastapi-project`  | `build`              | "new project", "bootstrap", "scaffold"                              |
-| `new-lambda-project`   | `build`, `ci`        | "new Lambda", "new SAM", "serverless"                               |
-| `alembic-migration`    | `build`, `db`        | "add migration", "modify model", "schema change"                    |
-| `pr-checklist`         | `git`, `code-review` | "open PR", "ready to merge", "prepare PR"                           |
-| `docker-build-debug`   | `debug`, `ci`        | "podman build failing", "container issue", "container not starting" |
-| `new-frontend-feature` | `build`, `frontend`  | "add frontend", "add UI", "React/Vue/Svelte component"              |
-| `performance-analysis` | `build`, `debug`     | "slow", "high memory", "profile", "optimise", "benchmark"           |
+| Skill                 | Trigger                                                              |
+| --------------------- | -------------------------------------------------------------------- |
+| `alembic-migration`   | "add migration", "modify model", "schema change"                     |
+| `cavecrew`            | "delegate to subagent", "save context", "use cavecrew", "spawn investigator/builder/reviewer" |
+| `caveman`             | "caveman mode", "less tokens", "be brief", `/caveman`               |
+| `caveman-compress`    | `/caveman:compress <filepath>`, "compress memory file"               |
+| `docker-build-debug`  | "podman build failing", "container issue", "container not starting"  |
+| `new-fastapi-project` | "new project", "bootstrap", "scaffold"                               |
+| `performance-analysis`| "slow", "high memory", "profile", "optimise", "benchmark"           |
+| `pr-checklist`        | "open PR", "ready to merge", "prepare PR"                            |
 
 ---
 
 ## Plugins
 
-Three npm plugins are loaded automatically by OpenCode at startup (no manual install needed —
-OpenCode resolves them from the `plugin` array in `opencode.jsonc`). One instruction-based
-plugin ships as a local file.
+Two plugins load automatically at startup from the `plugin` array in `opencode.jsonc`.
+No manual install required — OpenCode resolves them.
 
-| Plugin                    | Source             | Purpose                                                                                                                                |
-| ------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `@tarquinen/opencode-dcp` | npm                | Prunes stale tool outputs from context; extends session life on long tasks                                                             |
-| `opencode-handoff`        | npm                | Creates focused handoff prompts for continuing work in a new session                                                                   |
-| `shell-strategy`          | local instructions | Teaches agents to use non-interactive shell flags in all contexts. uv-aware (Python), bun-aware (frontend), no bare `python` or `pip`. |
+| Plugin                    | Source | Purpose                                                                                     |
+| ------------------------- | ------ | ------------------------------------------------------------------------------------------- |
+| `opencode-with-claude`    | npm    | Session hooks: injects caveman mode system prompt at startup and on session resume          |
+| `@tarquinen/opencode-dcp` | npm    | Dynamic context pruning: deduplication, error purging, range compression. Config in `dcp.jsonc`. |
 
 ---
 
 ## MCP Servers
 
-One MCP server is configured: the PostgreSQL live analysis server. It is disabled globally and re-enabled only on the `db` agent.
+No MCP servers in the global config. Add per-project when needed.
 
-| Server     | Runs via                   | Scoped to | Purpose                                                                                                    |
-| ---------- | -------------------------- | --------- | ---------------------------------------------------------------------------------------------------------- |
-| `postgres` | `uvx postgres-mcp` (stdio) | `db`      | Live DB introspection: schema discovery, SQL execution, EXPLAIN analysis, index recommendations, DB health |
+### PostgreSQL (`crystaldba/postgres-mcp`)
 
-### PostgreSQL MCP (`crystaldba/postgres-mcp`)
-
-The server is **spawned on demand** by OpenCode as a local stdio process — no manual
-start/stop required. OpenCode launches it automatically when the `db` agent is active.
-
-**Setup:** create an `opencode.json` at the project root (git-ignored, never committed)
-with the local connection string:
+Spawned on demand via `uvx` — no manual install or start/stop required. Create a
+git-ignored `opencode.json` at the project root:
 
 ```json
 {
@@ -189,65 +152,53 @@ with the local connection string:
 }
 ```
 
-> **Note:** `type` and `command` are required by the OpenCode config schema. A
-> partial `environment`-only entry will fail validation with `Invalid input mcp.postgres`.
-> The full server definition must be repeated in the project file.
+> **Note:** `type` and `command` are required by the OpenCode config schema. An
+> `environment`-only entry fails validation with `Invalid input mcp.postgres`.
 
-OpenCode merges this on top of the global config. The `db` agent picks up `DATABASE_URI`
-automatically and can:
+The `db` agent picks up `DATABASE_URI` automatically and can:
 
-- Inspect schemas, tables, columns, and indexes via `postgres_list_schemas` / `postgres_get_object_details`
+- Inspect schemas via `postgres_list_schemas` / `postgres_get_object_details`
 - Execute SQL via `postgres_execute_sql`
 - Run `EXPLAIN (ANALYZE, BUFFERS)` via `postgres_explain_query`
 - Find slow queries via `postgres_get_top_queries`
 - Get index recommendations via `postgres_analyze_workload_indexes` / `postgres_analyze_query_indexes`
 - Run a full DB health check via `postgres_analyze_db_health`
 
-**When scaffolding a new FastAPI project with a DB**, the `new-fastapi-project` skill
-creates the `opencode.json` stub automatically (Step 11b) and adds it to `.gitignore`
+Add `opencode.json` to `.gitignore` and `.containerignore` — it contains credentials.
+
+When scaffolding a new FastAPI project with a DB, the `new-fastapi-project` skill
+creates the `opencode.json` stub automatically and adds it to `.gitignore`
 and `.containerignore`.
-
----
-
-## Custom Tools
-
-Three TypeScript tools (require [Bun](https://bun.sh)) that provide structured output rather than raw terminal text.
-
-| Tool             | Invocation                           | Purpose                                                                                                             |
-| ---------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| `uv_run`         | `{ command: string[] }`              | Runs any command through `uv run --` in the project venv. Ensures the correct Python is always used.                |
-| `ruff_check`     | `{ paths: string[], fix?: bool }`    | Runs `ruff check --output-format json`. Returns structured violations array rather than colourised terminal output. |
-| `pytest_collect` | `{ path?: string, filter?: string }` | Collects test node IDs without running them. Surfaces import errors and missing tests before executing the suite.   |
 
 ---
 
 ## Formatters
 
-OpenCode formats every file it writes. The formatter config mirrors the Neovim `conform.nvim` setup exactly so agent-written files and editor-saved files come out identical.
+OpenCode formats every file it writes.
 
-| Filetype                                      | Formatter            | Notes                                                                                                                                 |
-| --------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `.py`, `.pyi`                                 | `ruff-format.sh`     | Three-step pipeline: `ruff check --fix` → `ruff format` → `ruff check --select I --fix`. Uses `--config pyproject.toml` when present. |
-| `.md`, `.mdx`                                 | `prettier` (via npx) | `--prose-wrap preserve` — does not reflow manually-wrapped paragraphs.                                                                |
-| `.js`, `.jsx`, `.ts`, `.tsx`, `.css`, `.html` | `prettier` (via npx) | Fallback for frontend files. Biome auto-overrides per-project when `biome.json` is present.                                           |
-| `.json`, `.jsonc`, `.yaml`, `.yml`            | `prettier` (via npx) | Single formatter for all config and data files. Biome auto-overrides per-project when `biome.json` is present.                        |
-| `.sh`, `.bash`                                | `shfmt`              | Standard shell script formatting.                                                                                                     |
+| Filetype                                      | Formatter            | Notes                                                                     |
+| --------------------------------------------- | -------------------- | ------------------------------------------------------------------------- |
+| `.py`, `.pyi`                                 | `ruff format`        | Single-step. Uses `--config pyproject.toml` when present.                 |
+| `.lua`                                        | `stylua`             | 2-space indent, 120 column width.                                         |
+| `.js`, `.jsx`, `.ts`, `.tsx`, `.css`, `.html` | `prettier` (via npx) | Biome auto-overrides per-project when `biome.json` is present.            |
+| `.json`, `.jsonc`, `.yaml`, `.yml`            | `prettier` (via npx) | Biome auto-overrides per-project when `biome.json` is present.            |
+| `.sh`, `.bash`                                | `shfmt`              | Standard shell formatting.                                                |
 
 ---
 
 ## Prerequisites
 
-| Tool                                                           | Required for                              | Install                         |
-| -------------------------------------------------------------- | ----------------------------------------- | ------------------------------- |
-| [opencode](https://opencode.ai)                                | Everything                                | `brew install sst/tap/opencode` |
-| [uv](https://docs.astral.sh/uv/)                               | Python projects                           | `brew install uv`               |
-| [ruff](https://docs.astral.sh/ruff/)                           | Python formatter                          | `brew install ruff`             |
-| [node](https://nodejs.org)                                     | npm plugins, prettier                     | `brew install node`             |
-| [bun](https://bun.sh)                                          | Custom TS tools, frontend runtime         | `brew install bun`              |
-| [podman](https://podman.io)                                    | Container runtime                         | `brew install podman`           |
-| [podman-compose](https://github.com/containers/podman-compose) | Compose support                           | `brew install podman-compose`   |
-| [shfmt](https://github.com/mvdan/sh)                           | Shell formatter                           | `brew install shfmt`            |
-| [trivy](https://trivy.dev)                                     | Container image CVE scanning _(optional)_ | `brew install trivy`            |
+| Tool                                                           | Required for                         | Install                         |
+| -------------------------------------------------------------- | ------------------------------------ | ------------------------------- |
+| [opencode](https://opencode.ai)                                | Everything                           | `brew install sst/tap/opencode` |
+| [uv](https://docs.astral.sh/uv/)                               | Python projects                      | `brew install uv`               |
+| [ruff](https://docs.astral.sh/ruff/)                           | Python formatter                     | `brew install ruff`             |
+| [node](https://nodejs.org)                                     | npm plugins, prettier                | `brew install node`             |
+| [podman](https://podman.io)                                    | Container runtime                    | `brew install podman`           |
+| [podman-compose](https://github.com/containers/podman-compose) | Compose support                      | `brew install podman-compose`   |
+| [shfmt](https://github.com/mvdan/sh)                           | Shell formatter                      | `brew install shfmt`            |
+| [stylua](https://github.com/JohnnyMorganz/StyLua)              | Lua formatter _(optional)_           | `brew install stylua`           |
+| [trivy](https://trivy.dev)                                     | Container CVE scanning _(optional)_  | `brew install trivy`            |
 
 ---
 
@@ -264,13 +215,14 @@ The script will:
 1. Check for all prerequisites and offer to install missing ones via Homebrew
 2. Back up any existing `~/.config/opencode/` directory
 3. Create a symlink: `~/.config/opencode` → this repo
-4. Make `scripts/ruff-format.sh` executable
-5. Verify the shell-strategy instructions file is present
 
-npm plugins (`@tarquinen/opencode-dcp`, `opencode-handoff`) are loaded
-automatically by OpenCode at startup — no separate install step is required.
+npm plugins (`opencode-with-claude`, `@tarquinen/opencode-dcp`) load automatically
+at OpenCode startup — no separate install step required.
 
-Because the config directory is a symlink to the repo, any `git pull` takes effect immediately — no re-running the install script.
+Because the config directory is a symlink to the repo, any `git pull` takes effect
+immediately — no re-running the install script. Live OpenCode sessions cache the
+config; restart OpenCode after `git pull` to pick up `AGENTS.md`, agent, or skill
+changes.
 
 ---
 
@@ -280,8 +232,6 @@ Because the config directory is a symlink to the repo, any `git pull` takes effe
 cd ~/projects/opencode
 git pull
 ```
-
-That's it. The symlink means there is no copy step.
 
 ---
 
@@ -297,7 +247,7 @@ OPENCODE_ENABLE_EXA=1 opencode
 
 ### Experimental LSP tool
 
-Gives agents access to go-to-definition, find-references, and call hierarchy via the LSP:
+Gives agents access to go-to-definition, find-references, and call hierarchy via LSP:
 
 ```bash
 OPENCODE_EXPERIMENTAL_LSP_TOOL=true opencode
@@ -305,7 +255,7 @@ OPENCODE_EXPERIMENTAL_LSP_TOOL=true opencode
 
 ### Editor integration (`/editor` and `/export`)
 
-The `/editor` command (compose a long prompt in your editor) and `/export` (export session to Markdown) use the `$EDITOR` environment variable. Add this to your shell profile:
+The `/editor` command and `/export` use the `$EDITOR` environment variable:
 
 ```bash
 export EDITOR=nvim   # or vim, code --wait, etc.
@@ -313,36 +263,30 @@ export EDITOR=nvim   # or vim, code --wait, etc.
 
 ### PostgreSQL MCP (live DB introspection)
 
-The `postgres` MCP is already configured in `opencode.jsonc` and scoped to the `db`
-agent. To activate it for a project, create a git-ignored `opencode.json` at the
-project root with the local connection string. See the
-[PostgreSQL MCP setup](#postgresql-mcp-crystaldbapostgres-mcp) section above for
-the exact format.
+No global config entry — add per-project. See the
+[PostgreSQL setup](#postgresql-crystaldbapostgres-mcp) section above.
 
 ---
 
 ## Adapting to a New Project
 
-`AGENTS.md` is a **global** instruction — it applies to every project opened in OpenCode. For project-specific overrides, add an `opencode.json` at the project root. Config files are merged, not replaced, so project-level settings stack on top of the global ones without losing anything.
+`AGENTS.md` is a **global** instruction — it applies to every project opened in OpenCode.
+For project-specific overrides, add an `opencode.json` at the project root. Config files
+are merged, not replaced.
 
-Example: pin a different model for a specific project:
-
-```json
-// ~/your-project/opencode.json
-{
-  "model": "openai/o3"
-}
-```
-
-Example: add project-specific instructions:
+Pin a different model:
 
 ```json
-{
-  "instructions": ["./CLAUDE.md"]
-}
+{ "model": "openai/o3" }
 ```
 
-Example: set the PostgreSQL connection string for the `db` agent (git-ignored):
+Add project-specific instructions:
+
+```json
+{ "instructions": ["./CLAUDE.md"] }
+```
+
+Set the PostgreSQL connection string (git-ignored):
 
 ```json
 {

@@ -1,80 +1,29 @@
 {
   "$schema": "https://opencode.ai/config.json",
 
-  // ── Instructions ──────────────────────────────────────────────────────────
-  // AGENTS.md loads Python project standards into every session.
-  // shell_strategy.md teaches agents to use non-interactive shell flags —
-  // uv-aware Python commands, bun-first frontend commands, no bare python/pip.
-  "instructions": ["./AGENTS.md", "./plugins/shell-strategy/shell_strategy.md"],
-
-  // ── LSP ───────────────────────────────────────────────────────────────────
-  // All LSP servers are auto-detected — no explicit configuration needed.
-  // pyright:     auto-starts when pyright is installed as a project dependency
-  // typescript:  auto-starts when typescript is a project dependency
-  // Both find the correct venv / tsconfig automatically from the project root.
-  // To disable a specific server: "lsp": { "pyright": { "disabled": true } }
-
-  // ── MCP Servers ───────────────────────────────────────────────────────────
-  // postgres is the only MCP server. It is spawned on demand by OpenCode as
-  // a local stdio process — no manual start/stop required.
-  // Disabled globally via "tools" below and re-enabled only on the db agent.
-  //
-  // Connection credentials are set per-project in a local opencode.json (git-ignored):
-  //   {
-  //     "mcp": {
-  //       "postgres": {
-  //         "type": "local",
-  //         "command": ["uvx", "postgres-mcp", "--access-mode=unrestricted"],
-  //         "environment": { "DATABASE_URI": "postgresql://..." }
-  //       }
-  //     }
-  //   }
-  // NOTE: type + command are required by the schema — a partial environment-only
-  // override is not valid. The full server definition must be repeated.
-  "mcp": {
-    // postgres (crystaldba/postgres-mcp) ───────────────────────────────────
-    // Full-featured PostgreSQL MCP: schema discovery, SQL execution,
-    // EXPLAIN analysis, slow query detection, index recommendations,
-    // and DB health checks.
-    //
-    // Spawned automatically by OpenCode when the db agent is active.
-    // Reads DATABASE_URI from the project-level opencode.json (git-ignored).
-    //
-    // --access-mode=unrestricted allows EXPLAIN ANALYZE and advisory queries
-    // in addition to read-only SELECT statements.
-    "postgres": {
-      "type": "local",
-      "command": ["uvx", "postgres-mcp", "--access-mode=unrestricted"],
-      "enabled": true,
-      "environment": {
-        "DATABASE_URI": "{env:DATABASE_URI}",
+  "provider": {
+    "amazon-bedrock": {
+      "options": {
+        "region": "{file:.secrets/aws-region}",
+        "profile": "{file:.secrets/aws-profile}",
+      },
+    },
+    "anthropic": {
+      "options": {
+        "baseURL": "{file:.secrets/anthropic-base-url}",
+        "apiKey": "{file:.secrets/anthropic-api-key}",
       },
     },
   },
 
-  // ── Formatters ────────────────────────────────────────────────────────────
-  // Built-in ruff and uv formatters are disabled — replaced by the three-step
-  // pipeline script that mirrors conform.nvim's exact sequence:
-  //   ruff check --fix  →  ruff format  →  ruff check --select I --fix
-  // This ensures every Python file OpenCode touches comes out identical to
-  // what conform produces on save in Neovim.
-  "formatter": {
-    // Disable built-in Python formatters to prevent conflicts with the pipeline
-    "ruff": { "disabled": true },
-    "uv": { "disabled": true },
+  "instructions": ["./AGENTS.md"],
 
-    // Python: three-step pipeline (ruff_fix + ruff_format + ruff_organize_imports)
-    // Path uses {env:HOME} so it resolves correctly once deployed to ~/.config/opencode/
-    "ruff-pipeline": {
-      "command": [
-        "{env:HOME}/.config/opencode/scripts/ruff-format.sh",
-        "$FILE",
-      ],
+  "formatter": {
+    "ruff": {
+      "command": ["ruff", "format", "$FILE"],
       "extensions": [".py", ".pyi"],
     },
 
-    // Lua: stylua with settings matching dotfiles/nvim stylua.toml
-    // (2-space indent, 120 col width)
     "stylua": {
       "command": [
         "stylua",
@@ -89,48 +38,22 @@
       "extensions": [".lua"],
     },
 
-    // Markdown: prettier via npx — no package.json required.
-    // --prose-wrap preserve prevents reflowing manually-wrapped prose paragraphs
-    // (important for AGENTS.md, READMEs, and exported session markdown).
-    "prettier-md": {
-      "command": [
-        "npx",
-        "--yes",
-        "prettier",
-        "--prose-wrap",
-        "preserve",
-        "--write",
-        "$FILE",
-      ],
-      "extensions": [".md", ".mdx"],
-    },
-
-    // JS/TS/JSX/TSX/CSS/HTML — prettier fallback for frontend files.
-    // biome auto-overrides these per-project when biome.json is present
-    // (OpenCode's built-in biome detection requires no config here).
     "prettier-web": {
       "command": ["npx", "--yes", "prettier", "--write", "$FILE"],
       "extensions": [".js", ".jsx", ".ts", ".tsx", ".css", ".html"],
     },
 
-    // JSON/YAML — single formatter for all config and data files.
-    // biome auto-overrides .json/.yaml per-project when biome.json is present.
     "prettier-config": {
       "command": ["npx", "--yes", "prettier", "--write", "$FILE"],
       "extensions": [".json", ".jsonc", ".yaml", ".yml"],
     },
 
-    // Shell scripts — shfmt with standard formatting.
     "shfmt": {
       "command": ["shfmt", "-w", "$FILE"],
       "extensions": [".sh", ".bash"],
     },
   },
 
-  // ── Watcher ───────────────────────────────────────────────────────────────
-  // Mirrors the ignore patterns from telescope.nvim's find_files/live_grep
-  // config plus Python/build artifacts — prevents noisy file-change events
-  // from generated and vendored directories.
   "watcher": {
     "ignore": [
       "node_modules/**",
@@ -151,24 +74,7 @@
     ],
   },
 
-  // ── Autoupdate ────────────────────────────────────────────────────────────
-  // Notify when a new version is available without auto-updating mid-session.
-  // Note: only works when opencode was not installed via a package manager
-  // (e.g. Homebrew). If installed via Homebrew, use `brew upgrade opencode`.
   "autoupdate": "notify",
 
-  // ── Plugins ───────────────────────────────────────────────────────────────
-  // Loaded automatically by OpenCode at startup — no manual install needed.
-  // Requires node/npx to be available (verified by install.sh).
-  "plugin": [
-    "@tarquinen/opencode-dcp", // prunes stale tool outputs from context
-    "opencode-handoff", // session handoff prompts near context limit
-  ],
-
-  // ── Global tool overrides ─────────────────────────────────────────────────
-  // Disable postgres MCP tools globally. Re-enabled only on the db agent
-  // via the agent-level "tools" configuration in agents/db.md.
-  "tools": {
-    "postgres_*": false,
-  },
+  "plugin": ["opencode-with-claude", "@tarquinen/opencode-dcp"],
 }

@@ -7,12 +7,11 @@
 #   2. Backs up any existing ~/.config/opencode directory (unless it is already
 #      a symlink pointing at this repo).
 #   3. Creates a symlink: ~/.config/opencode → this repo.
-#   4. Makes scripts/ruff-format.sh executable.
-#   5. Verifies the shell-strategy instructions file is present.
+#   4. Installs npm dependencies (plugin SDK for opencode-with-claude).
 #
-# Plugins (@tarquinen/opencode-dcp, opencode-handoff) are loaded automatically
-# by OpenCode at startup from the "plugin" array in opencode.jsonc — no manual
-# npm install is required here.
+# Plugins (opencode-with-claude, @tarquinen/opencode-dcp) are loaded
+# automatically by OpenCode at startup from the "plugin" array in
+# opencode.jsonc.
 #
 # The postgres MCP server (crystaldba/postgres-mcp) is spawned on demand by
 # OpenCode via uvx — no manual start/stop required.
@@ -177,9 +176,6 @@ else
 	ask_install "node" "node" "npm plugins and prettier"
 fi
 
-# Bun — required for custom TypeScript tools and frontend container image
-check_tool "bun" "bun" "bun" "custom TypeScript tools + frontend runtime"
-
 # Podman — container runtime (replaces Docker)
 check_tool "podman" "podman" "podman" "container runtime (build + run containers)"
 
@@ -240,26 +236,23 @@ else
 	ok "${DEST} ${DIM}→ ${REPO_DIR}${RESET}"
 fi
 
-# ── 3. Make scripts executable ────────────────────────────────────────────────
+# ── 3. Install npm dependencies ───────────────────────────────────────────────
 
-section "Making scripts executable..."
+section "Installing npm dependencies..."
 
-chmod +x "${REPO_DIR}/scripts/ruff-format.sh"
-ok "scripts/ruff-format.sh"
-
-# ── 4. Verify plugin assets ───────────────────────────────────────────────────
-
-section "Verifying plugin assets..."
-
-SHELL_STRATEGY="${REPO_DIR}/plugins/shell-strategy/shell_strategy.md"
-if [ -f "$SHELL_STRATEGY" ]; then
-	ok "plugins/shell-strategy/shell_strategy.md"
-else
-	warn "plugins/shell-strategy/shell_strategy.md not found"
-	info "This file should be in the repository. Try: git pull"
+if [ ! -f "${REPO_DIR}/package.json" ]; then
+	err "${REPO_DIR}/package.json not found"
+	exit 1
 fi
 
-# ── 5. postgres-mcp ───────────────────────────────────────────────────────────
+info "Running npm install in ${REPO_DIR}"
+if ! (cd "$REPO_DIR" && npm install); then
+	err "npm install failed"
+	exit 1
+fi
+ok "npm dependencies installed"
+
+# ── 4. postgres-mcp ───────────────────────────────────────────────────────────
 
 section "Checking postgres-mcp (PostgreSQL MCP)..."
 
@@ -276,7 +269,7 @@ else
 	info "Install uv first, then postgres-mcp will be available automatically"
 fi
 
-# ── 6. Summary ────────────────────────────────────────────────────────────────
+# ── 5. Summary ────────────────────────────────────────────────────────────────
 
 echo ""
 echo -e "${BOLD}${GREEN}══════════════════════════════════════════════════${RESET}"
@@ -301,8 +294,8 @@ fi
 
 echo ""
 echo -e "  ${BOLD}Plugins (auto-loaded by OpenCode at startup):${RESET}"
+dim "  opencode-with-claude     — Claude-specific system prompt + tools"
 dim "  @tarquinen/opencode-dcp  — context pruning"
-dim "  opencode-handoff         — session handoff prompts"
 
 echo ""
 echo -e "  ${BOLD}PostgreSQL MCP (postgres-mcp):${RESET}"
