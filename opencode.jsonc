@@ -62,5 +62,7 @@
 
   "update": "notify",
 
-  "plugins": ["opencode-with-claude", "@tarquinen/opencode-dcp"],
+  "compaction": { "keep": { "tokens": 30000 } },
+
+  "plugins": ["opencode-with-claude"],
 }

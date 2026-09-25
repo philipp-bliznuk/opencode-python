@@ -1,12 +1,11 @@
 # opencode-python
 
-Minimal [OpenCode](https://opencode.ai) V2 config for Python/FastAPI backend work. One ruleset (`AGENTS.md`), four read-mostly subagents, five on-demand skills. Nothing else.
+Minimal [OpenCode](https://opencode.ai) V2 config for Python/FastAPI backend work. One ruleset (`AGENTS.md`), four read-mostly subagents, five on-demand skills, one plugin. Nothing else.
 
 ```
 AGENTS.md        global standards — caveman mode, dir boundary, Python/FastAPI/SQLModel rules
 opencode.jsonc   providers, permissions, websearch, formatters, plugins
 cli.json         TUI: theme, scroll, diffs
-dcp.jsonc        @tarquinen/opencode-dcp context pruning
 agents/          review · debug · tests · db
 skills/          alembic-migration · docker-build-debug · new-fastapi-project · performance-analysis · pr-checklist
 install.sh       verify repo location, report missing tools
@@ -36,10 +35,7 @@ Chains run without prompting: feature → `@review` → `pr-checklist` · bug �
 
 ## Plugins
 
-| Plugin | Purpose |
-|---|---|
-| `opencode-with-claude` | Runs Meridian proxy so `anthropic` provider uses Claude Max subscription |
-| `@tarquinen/opencode-dcp` | Context pruning: dedup, error purge, model-driven `compress`. Config `dcp.jsonc`. |
+`opencode-with-claude` — runs Meridian proxy so the `anthropic` provider uses a Claude Max subscription. Context overflow handled by native V2 compaction (`compaction.keep.tokens: 30000`).
 
 ## PostgreSQL MCP (per project)
 
