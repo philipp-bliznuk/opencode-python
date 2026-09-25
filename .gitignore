@@ -1,14 +1,2 @@
-# Python
-__pycache__/
-*.py[cod]
-
-# macOS
-.DS_Store
-
-# Secrets
 .secrets/
-
-# Backup files created by install.sh
-*.backup.*
-
-node_modules/*
+service.json

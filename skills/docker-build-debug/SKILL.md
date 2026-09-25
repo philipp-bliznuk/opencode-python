@@ -1,82 +1,36 @@
 ---
 name: docker-build-debug
-description: >
-  Layered diagnosis for Podman/container build failures, startup issues, health checks,
-  image size. Load when container build fails or container not starting.
+description: Layered diagnosis for Podman build failures, container startup, healthchecks, image size. Load when container build fails or container not starting.
 ---
 
-# Podman Build & Container Diagnosis
+Work layers in order.
 
-Work through layers in order. Most issues caught by 1-3.
+## 1. Which stage?
+builder → L2 · final → L3 · runtime → L4
 
-## Layer 1: Which Stage Fails?
+## 2. Builder
+`podman build --no-cache -f docker/app/Containerfile .`
+- `uv.lock` not in `.containerignore`; `pyproject.toml` + `uv.lock` COPYed before `RUN uv sync`
+- `--mount=type=cache,target=/root/.cache/uv`
+- Python version matches `requires-python`; uv copied `COPY --from=ghcr.io/astral-sh/uv:x.x.x /uv /bin/uv`
 
-- **builder stage** -> uv install, Python version, lockfile issue (Layer 2)
-- **final stage** -> COPY, permission, PATH issue (Layer 3)
-- **runtime** -> app crash, missing env var, healthcheck (Layer 4)
+## 3. Final stage
+- `.venv` COPY path mismatch · missing `ENV PATH="/.venv/bin:$PATH"` · COPY before `USER appuser` or use `--chown`
 
-## Layer 2: Builder Failures
+## 4. Starts then exits
+`podman compose logs app`
+- pydantic `ValidationError` → env var missing, check `env_file:`
+- DB not ready → `depends_on` with `condition: service_healthy`
+- `podman compose logs app | grep alembic`
 
-```bash
-podman build --no-cache -f docker/app/Containerfile .  # rule out stale cache
-```
+## 5. Healthcheck
+`podman exec <c> curl -sf http://localhost:8000/service/healthcheck/` — raise `--start-period`; slim image lacks `curl` → Python healthcheck.
 
-Check:
-- `uv.lock` not in `.containerignore`
-- `pyproject.toml` + `uv.lock` COPYed BEFORE `RUN uv sync`
-- Cache mount syntax: `--mount=type=cache,target=/root/.cache/uv`
-- Python version matches `requires-python`
-- uv binary copied: `COPY --from=ghcr.io/astral-sh/uv:x.x.x /uv /bin/uv`
+## 6. Size
+`podman history --no-trunc <image>` — `.containerignore` complete; final stage COPYs `.venv` + src only; `podman run --rm <image> pip list | grep ruff` must be empty.
 
-## Layer 3: Final Stage Failures
+## 7. Ports
+`lsof -i :8000` — change host port in `compose.yml`.
 
-- `.venv` path mismatch between builder COPY source and actual location
-- Missing `ENV PATH="/.venv/bin:$PATH"` in final stage
-- Permission denied: `COPY` before `USER appuser`, or use `--chown`
-
-## Layer 4: Container Starts Then Exits
-
-```bash
-podman compose logs app
-```
-
-- **Missing env var**: pydantic-settings `ValidationError` at startup. Check `.env` passed via `env_file:`.
-- **DB not ready**: `depends_on` must use `condition: service_healthy`, not bare list.
-- **Alembic fails**: check `podman compose logs app | grep alembic`
-
-## Layer 5: Health Check Failing
-
-```bash
-podman exec <container> curl -sf http://localhost:8000/service/healthcheck/
-```
-
-- Endpoint not responding: app crashing before handling requests
-- Timing: increase `--start-period` for slow startup
-- `curl` not in slim image: install it or use Python-based healthcheck
-
-## Layer 6: Image Size
-
-```bash
-podman history --no-trunc <image>
-```
-
-- Check `.containerignore` completeness
-- Final stage should only COPY `.venv` + source -- no `uv sync` again
-- Verify dev deps excluded: `podman run --rm <image> pip list | grep ruff`
-
-## Layer 7: Port Conflicts
-
-```bash
-lsof -i :8000
-lsof -i :5433
-```
-
-Change host-side port in `compose.yml`.
-
-## Layer 8: Security Scan
-
-```bash
-trivy image --severity HIGH,CRITICAL <image>
-```
-
-CRITICAL/HIGH with fix available = block push. Update package or base image.
+## 8. Scan
+`trivy image --severity HIGH,CRITICAL <image>` — fixable CRITICAL/HIGH blocks push.

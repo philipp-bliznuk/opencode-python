@@ -1,29 +1,32 @@
 {
   "$schema": "https://opencode.ai/config.json",
 
-  "provider": {
+  "providers": {
     "amazon-bedrock": {
-      "options": {
+      "settings": {
         "region": "{file:.secrets/aws-region}",
         "profile": "{file:.secrets/aws-profile}",
       },
     },
     "anthropic": {
-      "options": {
+      "settings": {
         "baseURL": "{file:.secrets/anthropic-base-url}",
         "apiKey": "{file:.secrets/anthropic-api-key}",
       },
     },
   },
 
-  "instructions": ["./AGENTS.md"],
+  "permissions": [
+    { "action": "read", "resource": "*.env", "effect": "deny" },
+    { "action": "read", "resource": "*.env.*", "effect": "deny" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" },
+    { "action": "shell", "resource": "git push *", "effect": "ask" },
+  ],
 
+  "websearch": { "provider": "tavily" },
+
+  // Built-ins (ruff, shfmt, prettier, biome, ...) enabled by object form.
   "formatter": {
-    "ruff": {
-      "command": ["ruff", "format", "$FILE"],
-      "extensions": [".py", ".pyi"],
-    },
-
     "stylua": {
       "command": [
         "stylua",
@@ -37,21 +40,6 @@
       ],
       "extensions": [".lua"],
     },
-
-    "prettier-web": {
-      "command": ["npx", "--yes", "prettier", "--write", "$FILE"],
-      "extensions": [".js", ".jsx", ".ts", ".tsx", ".css", ".html"],
-    },
-
-    "prettier-config": {
-      "command": ["npx", "--yes", "prettier", "--write", "$FILE"],
-      "extensions": [".json", ".jsonc", ".yaml", ".yml"],
-    },
-
-    "shfmt": {
-      "command": ["shfmt", "-w", "$FILE"],
-      "extensions": [".sh", ".bash"],
-    },
   },
 
   "watcher": {
@@ -61,20 +49,18 @@
       ".venv/**",
       ".idea/**",
       ".ruff_cache/**",
+      ".pytest_cache/**",
       "__pycache__/**",
       "**/*.pyc",
-      "coverage/**",
-      ".pytest_cache/**",
-      ".aws-sam/**",
       "**/*.egg-info/**",
+      "coverage/**",
       "dist/**",
       "build/**",
-      "frontend/node_modules/**",
-      "frontend/dist/**",
+      ".aws-sam/**",
     ],
   },
 
-  "autoupdate": "notify",
+  "update": "notify",
 
-  "plugin": ["opencode-with-claude", "@tarquinen/opencode-dcp"],
+  "plugins": ["opencode-with-claude", "@tarquinen/opencode-dcp"],
 }
