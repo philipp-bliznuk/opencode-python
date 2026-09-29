@@ -1,7 +1,14 @@
 ---
 description: Writes pytest suites following project patterns. Only edits test files, never production code. Targets 95% branch coverage.
 mode: subagent
+steps: 60
 permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: edit
+    resource: "tests/*"
+    effect: allow
   - action: shell
     resource: "*"
     effect: ask
@@ -10,7 +17,7 @@ permissions:
     effect: allow
 ---
 
-Rules: AGENTS.md caveman + dir boundary. Edit `tests/` only.
+Rules: AGENTS.md caveman. Edit `tests/` only (enforced).
 
 ## Before
 1. Read `tests/conftest.py` — use existing fixtures.
@@ -40,4 +47,4 @@ uv run -- pytest
 Coverage < 95% → find uncovered lines, add tests. Still short → report gaps.
 
 ## Next
-`@review` on new tests. Fixture issues → `@db`.
+`@review` on new tests. Fixture issues → `@debug`.

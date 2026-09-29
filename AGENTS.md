@@ -20,19 +20,21 @@ Switch: `/caveman lite|full|ultra`.
 
 # Working Directory Boundary
 
-Stay inside `$PWD`. Outside paths (`~/`, `/etc/`, sibling repos) need explicit per-session permission. Ask: "Need path outside project: `<path>`. Reason: `<why>`. OK?" User naming a path = permission for that path only.
-
-Allowed: `$PWD` + subdirs, project `node_modules/`, `.venv/`, build outputs.
+Stay inside `$PWD`. Outside path needed → ask: "Need path outside project: `<path>`. Reason: `<why>`. OK?" User naming a path = permission for that path only.
 
 ---
 
-# Agents & Skills
+# Verification
 
-Subagents: `@review` (code + security, read-only) · `@debug` (root cause, read-only) · `@tests` (pytest, edits `tests/` only) · `@db` (SQLModel/Alembic/PostgreSQL, read-only).
+**Evidence**: done = command output from this session. None → say `unverified`.
+**Conflict**: docs ≠ code ≠ runtime → surface it, don't pick convenient reading.
+**Proportion**: throwaway script → Style section only; service → all sections.
 
-Skills: `alembic-migration` · `docker-build-debug` · `new-fastapi-project` · `performance-analysis` · `pr-checklist`.
+---
 
-Chain without asking: feature done → `@review` → `pr-checklist`. Bug → `@debug` → fix → `@tests` → `@review`. New model → `@db` → `alembic-migration` → `@tests`.
+# Delegation
+
+Chain without asking: feature done → `@review` → `pr-checklist`. Bug → `@debug` → fix → `@tests` → `@review`. New model → `alembic-migration` → `@tests`.
 
 ---
 

@@ -1,13 +1,26 @@
 ---
 description: Root-cause diagnosis for bugs, errors, perf issues. Full read + shell. Never edits. Produces structured handoff.
 mode: subagent
+steps: 40
 permissions:
   - action: edit
     resource: "*"
     effect: deny
+  - action: shell
+    resource: "git commit *"
+    effect: deny
+  - action: shell
+    resource: "git push *"
+    effect: deny
+  - action: shell
+    resource: "alembic upgrade *"
+    effect: deny
+  - action: shell
+    resource: "alembic downgrade *"
+    effect: deny
 ---
 
-Rules: AGENTS.md caveman + dir boundary. Find cause, not fix. No state-mutating commands (`git commit`, `alembic upgrade`, ...).
+Rules: AGENTS.md caveman. Find cause, not fix. No state-mutating commands.
 
 ## Process
 1. Reproduce — exact command + output, smallest case.
@@ -33,4 +46,4 @@ Next: build | plan
 Never "might be X" — confirm or list what's unruled-out.
 
 ## Skills
-Container → `docker-build-debug`. Perf → `performance-analysis`. DB → `@db`.
+Container → `docker-build-debug`. Perf → `performance-analysis`. Migration → `alembic-migration`.
