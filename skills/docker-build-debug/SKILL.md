@@ -24,13 +24,13 @@ builder → L2 · final → L3 · runtime → L4
 - `podman compose logs app | grep alembic`
 
 ## 5. Healthcheck
-`podman exec <c> curl -sf http://localhost:8000/service/healthcheck/` — raise `--start-period`; slim image lacks `curl` → Python healthcheck.
+`podman exec <c> curl -sf http://localhost:8000/service/healthcheck/` - raise `--start-period`; slim image lacks `curl` → Python healthcheck.
 
 ## 6. Size
-`podman history --no-trunc <image>` — `.containerignore` complete; final stage COPYs `.venv` + src only; `podman run --rm <image> pip list | grep ruff` must be empty.
+`podman history --no-trunc <image>` - `.containerignore` complete; final stage COPYs `.venv` + src only; `podman run --rm <image> pip list | grep ruff` must be empty.
 
 ## 7. Ports
-`lsof -i :8000` — change host port in `compose.yml`.
+`lsof -i :8000` - change host port in `compose.yml`.
 
 ## 8. Scan
-`trivy image --severity HIGH,CRITICAL <image>` — fixable CRITICAL/HIGH blocks push.
+`trivy image --severity HIGH,CRITICAL <image>` - fixable CRITICAL/HIGH blocks push.

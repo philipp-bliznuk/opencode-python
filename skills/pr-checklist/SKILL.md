@@ -1,6 +1,6 @@
 ---
 name: pr-checklist
-description: Pre-merge gate — lint, tests, coverage, security, migration safety, commit hygiene. Load when preparing a PR.
+description: Pre-merge gate - lint, tests, coverage, security, migration safety, commit hygiene. Load when preparing a PR.
 ---
 
 All pass or explicitly noted.

@@ -7,14 +7,14 @@
     },
   },
 
-  // Hidden title agent runs every session — route to Haiku.
+  // Hidden title agent runs every session - route to Haiku.
   "agents": {
     "title": { "model": "amazon-bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0" },
   },
 
   "permissions": [{ "action": "shell", "resource": "git push *", "effect": "ask" }],
 
-  // Hard denies — project config and "Allow always" cannot lift these.
+  // Hard denies - project config and "Allow always" cannot lift these.
   "experimental": {
     "policies": [
       { "action": "provider.use", "resource": "*", "effect": "deny" },

@@ -1,6 +1,6 @@
 ---
 name: new-fastapi-project
-description: Scaffold new FastAPI service — uv, pyproject, ruff, bandit, pre-commit, GitHub Actions, Makefile, Podman, api/ layout. Load when user asks to create/bootstrap FastAPI project.
+description: Scaffold new FastAPI service - uv, pyproject, ruff, bandit, pre-commit, GitHub Actions, Makefile, Podman, api/ layout. Load when user asks to create/bootstrap FastAPI project.
 ---
 
 ## Ask first
@@ -20,7 +20,7 @@ uv add --group test gevent pytest pytest-asyncio pytest-cov pytest-env pytest-in
 4. `ruff.toml`: `extend = "./pyproject.toml"`, `[lint] unfixable = ["F401", "T20"]`.
 5. `.gitignore`: `.venv/ __pycache__/ .env opencode.json .ruff_cache/ .pytest_cache/ coverage/`. `.env.example` with placeholders.
 6. `Makefile`: `install fmt lint test check clean build up down logs` (+ `migration_*` if DB).
-7. `.pre-commit-config.yaml` — hooks run whole codebase.
+7. `.pre-commit-config.yaml` - hooks run whole codebase.
 8. Layout:
 ```
 app.py                     create_app() → _set_routers, _set_middleware

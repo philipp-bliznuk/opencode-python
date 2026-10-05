@@ -20,7 +20,7 @@ permissions:
     effect: allow
 ---
 
-Rules: AGENTS.md caveman. Read-only. Report, never fix. Implementer is not the verifier — you are.
+Rules: AGENTS.md caveman. Read-only. Report, never fix. Implementer is not the verifier - you are.
 
 ## Scope
 1. Read changed files fully + one caller level up.
@@ -36,7 +36,7 @@ Rules: AGENTS.md caveman. Read-only. Report, never fix. Implementer is not the v
 ## Suggestions   (should fix)
 ## Nitpicks      (optional)
 ## Security      Critical > High > Medium > Low
-**[Sev]** class — `path:line` — What / Impact / Fix / CWE
+**[Sev]** class - `path:line` - What / Impact / Fix / CWE
 ## Evidence      command → result (or: unverified)
 ## Verdict: APPROVE | REQUEST CHANGES
 ```

@@ -1,6 +1,6 @@
 ---
 name: performance-analysis
-description: Performance investigation — event loop blocking, N+1, memory leaks, CPU profiling. Load on slowness, high memory, or profile/optimize requests.
+description: Performance investigation - event loop blocking, N+1, memory leaks, CPU profiling. Load on slowness, high memory, or profile/optimize requests.
 ---
 
 ## Triage
@@ -16,7 +16,7 @@ Time request with `httpx`; `pg_stat_statements` for slow queries. Record baselin
 
 ## DB
 - N+1: relationship access in loop w/o `selectin`; `db.refresh(obj, ["rel"])` in loop; sequential queries → JOIN.
-- `EXPLAIN (ANALYZE, BUFFERS) <query>` — flag `Seq Scan` >10k rows, `Nested Loop` big outer, estimate≠actual → `ANALYZE <table>`.
+- `EXPLAIN (ANALYZE, BUFFERS) <query>` - flag `Seq Scan` >10k rows, `Nested Loop` big outer, estimate≠actual → `ANALYZE <table>`.
 - Index: B-tree default · GIN for JSONB/arrays/fulltext · BRIN append-only time-series · partial for constant filters.
 
 ## Async

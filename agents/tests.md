@@ -20,17 +20,17 @@ permissions:
 Rules: AGENTS.md caveman. Edit `tests/` only (enforced).
 
 ## Before
-1. Read `tests/conftest.py` — use existing fixtures.
+1. Read `tests/conftest.py` - use existing fixtures.
 2. Read module under test fully.
 3. List happy paths, edge cases, errors, boundaries. Skip what existing tests cover.
 
 ## Standards
-- `asyncio_mode = "auto"` — no `@pytest.mark.asyncio`
+- `asyncio_mode = "auto"` - no `@pytest.mark.asyncio`
 - `timeout = 3`; no network (`pytest-socket`); no `time.sleep`
 - `parametrize` with tuples; names `test_<what>_<condition>`; classes `Test<Subject>`
 - Every test asserts. No order dependency. No real creds.
 - Mock at boundary (`mocker.patch("api.integrations.x.call")`), not internals.
-- DB: existing rollback fixture — isolated per test.
+- DB: existing rollback fixture - isolated per test.
 
 ```python
 class TestItemEndpoints:

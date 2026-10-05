@@ -1,4 +1,4 @@
-# CAVEMAN MODE — ALWAYS ON
+# CAVEMAN MODE - ALWAYS ON
 
 Every response, every agent, every mode. Off only on "stop caveman" / "normal mode".
 
@@ -16,6 +16,8 @@ Switch: `/caveman lite|full|ultra`.
 
 **Normal English for**: security warnings, irreversible-action confirmations, multi-step sequences where fragments risk ambiguity, user asks to clarify. Code blocks, commit messages, PR descriptions always normal.
 
+**No em dash.** Never em dash (U+2014) or en dash (U+2013) anywhere: prose, docs, comments, commit messages, agent/skill files. Simple `-` only. Every agent, every mode.
+
 ---
 
 # Working Directory Boundary
@@ -27,7 +29,7 @@ Stay inside `$PWD`. Outside path needed → ask: "Need path outside project: `<p
 # Verification
 
 **Evidence**: done = command output from this session. None → say `unverified`.
-**Conflict**: docs ≠ code ≠ runtime → surface it, don't pick convenient reading.
+**Conflict**: docs ≠ code ≠ runtime → surface it, don't pick convenient reading → `@critic`.
 **Proportion**: throwaway script → Style section only; service → all sections.
 
 ---
@@ -35,6 +37,8 @@ Stay inside `$PWD`. Outside path needed → ask: "Need path outside project: `<p
 # Delegation
 
 Chain without asking: feature done → `@review` → `pr-checklist`. Bug → `@debug` → fix → `@tests` → `@review`. New model → `alembic-migration` → `@tests`.
+
+**Critic loop.** Before committing to decision, `@critic` when: (a) you state assumption / uncertainty, (b) docs ≠ code ≠ runtime, (c) irreversible or architectural change - schema, auth, deploy, deps, public API, (d) user asks. Send Claim / Context / Evidence / Confidence / Ask. Rebut in same session (`sessionID`) with new evidence only. Done when verdict `HOLDS`, or `HOLDS WITH CONDITIONS` with conditions adopted. Max 3 rounds → stop, present both positions + open points to user. Never proceed silently on `FLAWED` / `INSUFFICIENT EVIDENCE`.
 
 ---
 
@@ -50,8 +54,8 @@ Python **3.14** (`.python-version`) · **uv** only (no pip/poetry) · **ruff** l
 
 ## Style
 
-- `import typing as t` — never `from typing import`. Absolute imports only. Type-only imports under `if t.TYPE_CHECKING:`.
-- Full annotations on public funcs. `X | None`, `list[str]`, `dict[str, int]` — no `Optional`/`Union`/`List`.
+- `import typing as t` - never `from typing import`. Absolute imports only. Type-only imports under `if t.TYPE_CHECKING:`.
+- Full annotations on public funcs. `X | None`, `list[str]`, `dict[str, int]` - no `Optional`/`Union`/`List`.
 - Google docstrings on public funcs/classes. Not on `__init__`/magic/modules.
 - All args keyword-only (`*,`). Bool args = smell → enum or split func.
 - No commented-out code, file headers, `print()`, `breakpoint()`, bare `except:`.
@@ -83,7 +87,7 @@ Refactor, never suppress.
 - `DateTime(timezone=True)` · `JSONB()` · `lazy="selectin"` · `back_populates` both sides.
 - FKs + constraints explicitly named, `ondelete="CASCADE"`. Enums extend `BaseEnum(StrEnum)`.
 - Generic `Controller[ModelType]` CRUD, one singleton per model.
-- `model_factory` derives `FooResponse` / `FooCreate` / `FooUpdate` / `FooResponseFull` — never duplicate fields.
+- `model_factory` derives `FooResponse` / `FooCreate` / `FooUpdate` / `FooResponseFull` - never duplicate fields.
 
 ## Testing
 

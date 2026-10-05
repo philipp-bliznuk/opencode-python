@@ -1,6 +1,6 @@
 ---
 name: alembic-migration
-description: Alembic migration workflow — autogenerate, constraint naming, enum changes, big-table indexes, reversibility. Load when changing SQLModel models or schema.
+description: Alembic migration workflow - autogenerate, constraint naming, enum changes, big-table indexes, reversibility. Load when changing SQLModel models or schema.
 ---
 
 ## Pre-flight
@@ -9,7 +9,7 @@ description: Alembic migration workflow — autogenerate, constraint naming, enu
 - `uv run -- alembic current && uv run -- alembic history --verbose`
 
 ## Generate
-`uv run -- alembic revision --autogenerate -m "<slug>"` — snake_case imperative, e.g. `add_items_table`.
+`uv run -- alembic revision --autogenerate -m "<slug>"` - snake_case imperative, e.g. `add_items_table`.
 
 ## Review generated file
 - Names: FK `<table>_<col>_fkey`, unique `unique_<table>_<cols>`, index `ix_<table>_<col>`. No `None`.
