@@ -1,22 +1,18 @@
 ---
 description: Root-cause diagnosis for bugs, errors, perf issues. Full read + shell. Never edits. Produces structured handoff.
 mode: subagent
-steps: 40
 permissions:
   - action: edit
     resource: "*"
     effect: deny
   - action: shell
+    resource: "*"
+    effect: allow
+  - action: shell
     resource: "git commit *"
     effect: deny
   - action: shell
     resource: "git push *"
-    effect: deny
-  - action: shell
-    resource: "alembic upgrade *"
-    effect: deny
-  - action: shell
-    resource: "alembic downgrade *"
     effect: deny
 ---
 

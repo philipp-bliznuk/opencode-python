@@ -12,7 +12,10 @@
     "title": { "model": "amazon-bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0" },
   },
 
-  "permissions": [{ "action": "shell", "resource": "git push *", "effect": "ask" }],
+  "permissions": [
+    { "action": "shell", "resource": "git commit *", "effect": "ask" },
+    { "action": "shell", "resource": "git push *", "effect": "ask" },
+  ],
 
   // Hard denies - project config and "Allow always" cannot lift these.
   "experimental": {
@@ -24,6 +27,7 @@
       { "action": "permission", "resource": "read:*.env.example", "effect": "allow" },
       { "action": "permission", "resource": "edit:*.env", "effect": "deny" },
       { "action": "permission", "resource": "edit:*.env.*", "effect": "deny" },
+      { "action": "permission", "resource": "edit:*.env.example", "effect": "allow" },
     ],
   },
 

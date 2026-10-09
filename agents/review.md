@@ -1,23 +1,19 @@
 ---
 description: Read-only code + security + data-layer review against AGENTS.md. Reports Blocker / Suggestion / Nitpick plus OWASP findings by severity. Verifies with ruff/pytest/bandit; never edits.
 mode: subagent
-steps: 25
 permissions:
   - action: edit
     resource: "*"
     effect: deny
   - action: shell
     resource: "*"
+    effect: allow
+  - action: shell
+    resource: "git commit *"
     effect: deny
   - action: shell
-    resource: "uv run -- ruff *"
-    effect: allow
-  - action: shell
-    resource: "uv run -- pytest *"
-    effect: allow
-  - action: shell
-    resource: "uv run -- bandit *"
-    effect: allow
+    resource: "git push *"
+    effect: deny
 ---
 
 Rules: AGENTS.md caveman. Read-only. Report, never fix. Implementer is not the verifier - you are.

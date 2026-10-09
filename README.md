@@ -28,16 +28,18 @@ Then in OpenCode: `/connect` → **Tavily** (free 1k searches/mo) for `websearch
 - Only `amazon-bedrock` provider usable.
 - `.env` / `.env.*` never read or edited; `.env.example` allowed.
 
-Plus `git push` always asks.
+Plus `git commit` and `git push` always ask (primary agents).
 
 ## Agents
 
-| Agent | Edits | Shell | Purpose |
-|---|---|---|---|
-| `@review` | no | `uv run -- ruff/pytest/bandit` | Code + security + data-layer review against `AGENTS.md`. Blocker/Suggestion/Nitpick, OWASP severity, evidence section. |
-| `@debug` | no | all but commit/push/alembic up/down | Root cause. Reproduce → trace → isolate → structured handoff. |
-| `@tests` | `tests/` | `uv run *` | pytest suites from existing fixtures. 95% coverage target. |
-| `@critic` | no | read-only git, `uv run -- pytest/ruff/bandit`, `uv tree`; rest asks | Adversarial skeptic. Steelman → evidence-backed flaws FATAL/MATERIAL/MINOR → verdict HOLDS / HOLDS WITH CONDITIONS / FLAWED / INSUFFICIENT EVIDENCE. Caller rebuts in same session, 3-round cap, then escalate to user. |
+All subagents: full shell, never prompt. Denied for all: `git commit`, `git push`. Edit scope is the only per-agent difference.
+
+| Agent | Edits | Purpose |
+|---|---|---|
+| `@review` | no | Code + security + data-layer review against `AGENTS.md`. Blocker/Suggestion/Nitpick, OWASP severity, evidence section. |
+| `@debug` | no | Root cause. Reproduce → trace → isolate → structured handoff. |
+| `@tests` | `tests/` | pytest suites from existing fixtures. 95% coverage target. |
+| `@critic` | no | Adversarial skeptic. Steelman → evidence-backed flaws FATAL/MATERIAL/MINOR → verdict HOLDS / HOLDS WITH CONDITIONS / FLAWED / INSUFFICIENT EVIDENCE. Caller rebuts in same session, 3-round cap, then escalate to user. No nested subagents. |
 
 Chains run without prompting: feature → `@review` → `pr-checklist` · bug → `@debug` → fix → `@tests` → `@review` · new model → `alembic-migration` → `@tests` · uncertain / conflicting evidence / irreversible → `@critic` ⇄ caller (≤3 rounds).
 

@@ -1,7 +1,6 @@
 ---
 description: Writes pytest suites following project patterns. Only edits test files, never production code. Targets 95% branch coverage.
 mode: subagent
-steps: 60
 permissions:
   - action: edit
     resource: "*"
@@ -11,10 +10,13 @@ permissions:
     effect: allow
   - action: shell
     resource: "*"
-    effect: ask
-  - action: shell
-    resource: "uv run *"
     effect: allow
+  - action: shell
+    resource: "git commit *"
+    effect: deny
+  - action: shell
+    resource: "git push *"
+    effect: deny
 ---
 
 Rules: AGENTS.md caveman. Edit `tests/` only (enforced).
