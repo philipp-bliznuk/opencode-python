@@ -1,10 +1,10 @@
 # opencode-python
 
-Minimal [OpenCode](https://opencode.ai) V2 config for Python/FastAPI backend work. One ruleset (`AGENTS.md`), four read-mostly subagents, five on-demand skills, two commands, one plugin. Nothing else.
+Minimal [OpenCode](https://opencode.ai) V2 config for Python/FastAPI backend work. One ruleset (`AGENTS.md`), four read-mostly subagents, five on-demand skills, two commands. Nothing else.
 
 ```
 AGENTS.md        global standards - caveman mode, no em dash, dir boundary, verification, critic loop, Python/FastAPI/SQLModel rules
-opencode.jsonc   provider, policies, permissions, websearch, formatters, compaction, plugins
+opencode.jsonc   provider, policies, permissions, websearch, formatters, compaction
 cli.json         TUI: theme, scroll, diffs, notifications, turn tokens
 agents/          review · debug · tests · critic
 commands/        /review - diff → @review in background · /critic - claim → @critic in background
@@ -39,15 +39,15 @@ All subagents: full shell, never prompt. Denied for all: `git commit`, `git push
 | `@review` | no | Code + security + data-layer review against `AGENTS.md`. Blocker/Suggestion/Nitpick, OWASP severity, evidence section. |
 | `@debug` | no | Root cause. Reproduce → trace → isolate → structured handoff. |
 | `@tests` | `tests/` | pytest suites from existing fixtures. 95% coverage target. |
-| `@critic` | no | Adversarial skeptic. Steelman → evidence-backed flaws FATAL/MATERIAL/MINOR → verdict HOLDS / HOLDS WITH CONDITIONS / FLAWED / INSUFFICIENT EVIDENCE. Caller rebuts in same session, 3-round cap, then escalate to user. No nested subagents. |
+| `@critic` | no | Adversarial skeptic. Steelman → evidence-backed flaws FATAL/MATERIAL/MINOR → verdict HOLDS / HOLDS WITH CONDITIONS / FLAWED / INSUFFICIENT EVIDENCE. Caller rebuts in same session with new evidence; stalemate escalates to user. No nested subagents. |
 
-Chains run without prompting: feature → `@review` → `pr-checklist` · bug → `@debug` → fix → `@tests` → `@review` · new model → `alembic-migration` → `@tests` · uncertain / conflicting evidence / irreversible → `@critic` ⇄ caller (≤3 rounds).
+Chains run without prompting: feature → `@review` → `pr-checklist` · bug → `@debug` → fix → `@tests` → `@review` · new model → `alembic-migration` → `@tests` · uncertain / conflicting evidence / irreversible → `@critic` ⇄ caller.
 
 `/review` runs `@review` on the working-tree diff as a background child session. `/critic <claim>` runs `@critic` on the claim with working-tree status as context.
 
-## Plugins
+## Compaction
 
-`@tarquinen/opencode-dcp` - context pruning: dedups repeated tool output, purges errored calls, exposes `compress` tool to the model. `/dcp` shows stats. Native compaction remains fallback (`compaction.keep.tokens: 30000`, `buffer: 20000`).
+Native V2 compaction only, no plugins. Ceiling = model window - `compaction.buffer`; `buffer: 800000` triggers at ~200K on the 1M Claude models, keeping `keep.tokens: 30000` of recent turns verbatim beside the summary. Not clamped: on a 200K-window model it compacts every turn, so stay on 1M models. Force manually: `opencode api post /api/session/<id>/compact --data '{}'`.
 
 ## Formatters
 

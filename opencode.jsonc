@@ -59,9 +59,8 @@
     ],
   },
 
-  "compaction": { "keep": { "tokens": 30000 }, "buffer": 20000 },
+  // Auto-compaction ceiling = window - buffer. 1M models -> 200K. Not clamped: a 200K model would compact every turn.
+  "compaction": { "keep": { "tokens": 30000 }, "buffer": 800000 },
 
   "update": "notify",
-
-  "plugins": ["@tarquinen/opencode-dcp@3.2.0"],
 }

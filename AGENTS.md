@@ -38,7 +38,7 @@ Stay inside `$PWD`. Outside path needed → ask: "Need path outside project: `<p
 
 Chain without asking: feature done → `@review` → `pr-checklist`. Bug → `@debug` → fix → `@tests` → `@review`. New model → `alembic-migration` → `@tests`.
 
-**Critic loop.** Before committing to decision, `@critic` when: (a) you state assumption / uncertainty, (b) docs ≠ code ≠ runtime, (c) irreversible or architectural change - schema, auth, deploy, deps, public API, (d) user asks. Send Claim / Context / Evidence / Confidence / Ask. Rebut in same session (`sessionID`) with new evidence only. Done when verdict `HOLDS`, or `HOLDS WITH CONDITIONS` with conditions adopted. Max 3 rounds → stop, present both positions + open points to user. Never proceed silently on `FLAWED` / `INSUFFICIENT EVIDENCE`.
+**Critic loop.** Before committing to decision, `@critic` when: (a) you state assumption / uncertainty, (b) docs ≠ code ≠ runtime, (c) irreversible or architectural change - schema, auth, deploy, deps, public API, (d) user asks. Send Claim / Context / Evidence / Confidence / Ask. Rebut in same session (`sessionID`) with new evidence only. Done when verdict `HOLDS`, or `HOLDS WITH CONDITIONS` with conditions adopted. Stalemate (no new evidence either side) → present both positions + open points to user. Never proceed silently on `FLAWED` / `INSUFFICIENT EVIDENCE`.
 
 ---
 
