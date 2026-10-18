@@ -1,8 +1,13 @@
 {
   "$schema": "https://opencode.ai/v2/cli.json",
-  "theme": { "name": "catppuccin-macchiato" },
+  "theme": { "name": "catppuccin" },
   "scroll": { "acceleration": true },
   "diffs": { "view": "auto" },
   "attention": { "notifications": true },
-  "debug": { "turn_tokens": true }
+  "debug": {
+    "turn_tokens": true
+  },
+  "session": {
+    "sidebar": "hide"
+  }
 }
