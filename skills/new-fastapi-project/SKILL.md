@@ -1,6 +1,6 @@
 ---
 name: new-fastapi-project
-description: Scaffold new FastAPI service - uv, pyproject, ruff, bandit, pre-commit, GitHub Actions, Makefile, Podman, api/ layout. Load when user asks to create/bootstrap FastAPI project.
+description: Scaffold new FastAPI service - uv, pyproject, ruff, bandit, pre-commit, GitHub Actions, justfile, Podman, api/ layout. Load when user asks to create/bootstrap FastAPI project.
 ---
 
 ## Ask first
@@ -19,7 +19,7 @@ uv add --group test gevent pytest pytest-asyncio pytest-cov pytest-env pytest-in
 3. `pyproject.toml` per AGENTS.md. Add `extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Header"]`, `runtime-evaluated-base-classes` for Pydantic/SQLModel.
 4. `ruff.toml`: `extend = "./pyproject.toml"`, `[lint] unfixable = ["F401", "T20"]`.
 5. `.gitignore`: `.venv/ __pycache__/ .env opencode.json .ruff_cache/ .pytest_cache/ coverage/`. `.env.example` with placeholders.
-6. `Makefile`: `install fmt lint test check clean build up down logs` (+ `migration_*` if DB).
+6. `justfile`: first recipe `@default: just --list`; recipes `install fmt lint test check clean build up down logs` (+ `migration_*` if DB). `fmt` runs `just --fmt`, `lint` runs `just --fmt --check` alongside ruff.
 7. `.pre-commit-config.yaml` - hooks run whole codebase.
 8. Layout:
 ```
@@ -32,4 +32,4 @@ app.py                     create_app() → _set_routers, _set_middleware
 9. `.github/`: `CODEOWNERS`, `labeler.yml`, `actions/setup_env/action.yml`, `workflows/pr_check.yml`.
 10. `docker/app/Containerfile` (multi-stage), `docker/app/entrypoint.sh`, `compose.yml`, `gunicorn.conf.py`, `.containerignore`.
 11. DB: `uv run -- alembic init --template async migrations`; canonical `env.py`.
-12. `uv lock && uv sync && uv run -- pre-commit install --install-hooks && make fmt lint`
+12. `uv lock && uv sync && uv run -- pre-commit install --install-hooks && just fmt lint`

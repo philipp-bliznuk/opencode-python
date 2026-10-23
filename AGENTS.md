@@ -99,4 +99,4 @@ Refactor, never suppress.
 
 ## Deploy
 
-Multi-stage Containerfile (builder `uv sync --frozen --no-dev` → non-root final). `podman`, not docker. Healthcheck every container. `gunicorn` + `UvicornWorker` prod. CI: ruff + bandit + tests. Makefile: `install fmt lint test check clean`.
+Multi-stage Containerfile (builder `uv sync --frozen --no-dev` → non-root final). `podman`, not docker. Healthcheck every container. `gunicorn` + `UvicornWorker` prod. CI: ruff + bandit + tests. `justfile` (`just`, not make): `install fmt lint test check clean`.

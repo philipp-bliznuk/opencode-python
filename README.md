@@ -55,4 +55,4 @@ Built-ins auto-detected: `ruff` (needs ruff config in project), `shfmt`, `pretti
 
 ## Prereqs
 
-`opencode` · `uv` · `ruff` · `podman` · `podman-compose` · `shfmt` · optional `stylua`, `trivy`.
+`opencode` · `uv` · `ruff` · `just` · `podman` · `podman-compose` · `shfmt` · optional `stylua`, `trivy`.

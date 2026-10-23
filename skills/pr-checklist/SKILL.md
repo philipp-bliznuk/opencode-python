@@ -34,4 +34,4 @@ Conventional Commits · rebased, no merge/WIP/fixup · atomic.
 ## Notes
 ```
 
-## 7. `make check` → green → open PR.
+## 7. `just check` → green → open PR.
