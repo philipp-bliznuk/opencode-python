@@ -7,6 +7,10 @@
     },
   },
 
+  // No local model servers here: vLLM discovery probes 127.0.0.1:8000 (/health, /v1/models)
+  // in the background, which lands in whatever dev server listens there.
+  "plugins": ["-opencode.provider.vllm", "-opencode.provider.ollama", "-opencode.provider.lmstudio"],
+
   // Hidden title agent runs every session - route to Haiku.
   "agents": {
     "title": { "model": "amazon-bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0" },
